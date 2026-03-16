@@ -433,6 +433,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           ))}
         </div>
       </div>
+      </div>
 
       {/* Sticky Button at Bottom */}
       <div className="border-t border-border bg-white p-4">
