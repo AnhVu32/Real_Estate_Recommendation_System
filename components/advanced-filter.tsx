@@ -15,7 +15,7 @@ import {
 
 const WARDS = [
   "Tất cả", "An Đông", "An Hội Đông", "An Hội Tây", "An Khánh", "An Lạc", "An Long", "An Nhơn", 
-  "An Nhơn Tây", "An Phú", "An Phú Đông", "An Thới Đông", "Bà Điểm", "Bà Rịa", "Bắc Tân Uyên", 
+  "An Nhơn Tây", "An Phú", "An Phú Đông", "An Thời Đông", "Bà Điểm", "Bà Rịa", "Bắc Tân Uyên", 
   "Bàn Cờ", "Bàu Bàng", "Bàu Lâm", "Bảy Hiền", "Bến Cát", "Bến Thành", "Bình Chánh", "Bình Châu", 
   "Bình Cơ", "Bình Đông", "Bình Dương", "Bình Giã", "Bình Hòa", "Bình Hưng", "Bình Hưng Hòa", 
   "Bình Khánh", "Bình Lợi", "Bình Lợi Trung", "Bình Mỹ", "Bình Phú", "Bình Quới", "Bình Tân", 
@@ -204,51 +204,9 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
 
     onApplyFilters(filters)
   }
-    } else {
-      if (checked) {
-        const newSelected = [...selectedWards, ward]
-        if (newSelected.length === WARDS.length - 1) {
-          setSelectedWards(WARDS)
-        } else {
-          setSelectedWards(newSelected)
-        }
-      } else {
-        setSelectedWards(selectedWards.filter(w => w !== ward && w !== "Tất cả"))
-      }
-    }
-  }
-
-  const handleAmenityChange = (amenity: string, checked: boolean) => {
-    if (amenity === "Tất cả") {
-      if (checked) {
-        setSelectedAmenities(AMENITIES)
-      } else {
-        setSelectedAmenities([])
-      }
-    } else {
-      if (checked) {
-        const newSelected = [...selectedAmenities, amenity]
-        if (newSelected.length === AMENITIES.length - 1) {
-          setSelectedAmenities(AMENITIES)
-        } else {
-          setSelectedAmenities(newSelected)
-        }
-      } else {
-        setSelectedAmenities(selectedAmenities.filter(a => a !== amenity && a !== "Tất cả"))
-      }
-    }
-  }
 
   return (
     <div className="space-y-6">
-      {/* Title and Subtitle */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">Tìm kiếm chuyên sâu</h1>
-        <p className="text-muted-foreground text-sm">
-          Cung cấp chi tiết yêu cầu của bạn để AI lọc kết quả chính xác nhất.
-        </p>
-      </div>
-
       {/* 1. VỊ TRÍ - Checkbox list with search */}
       <div>
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
