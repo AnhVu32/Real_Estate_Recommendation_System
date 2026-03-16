@@ -51,7 +51,6 @@ const DIRECTIONS = [
   "Tất cả", "Tây - Nam", "Đông - Nam", "Bắc", "Nam", "Đông - Bắc", "Tây - Bắc", "Tây", "Đông", "Không rõ"
 ]
 
-// Mapping from Vietnamese amenity names to backend query parameters
 const AMENITY_MAPPING: { [key: string]: string } = {
   "Hồ bơi": "pool",
   "Gym": "gym",
@@ -152,19 +151,13 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   const handleApplyFilters = () => {
     const filters: any = {}
 
-    // Add price filters
     if (minPrice) filters.min_price = parseFloat(minPrice)
     if (maxPrice) filters.max_price = parseFloat(maxPrice)
-
-    // Add area filters
     if (minArea) filters.min_area = parseFloat(minArea)
     if (maxArea) filters.max_area = parseFloat(maxArea)
-
-    // Add bedrooms/bathrooms
     if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
     if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
 
-    // Add legal status
     if (legalStatus !== "all") {
       const statusMap: { [key: string]: string } = {
         "so-hong-rieng": "own_certificate",
@@ -175,7 +168,6 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       filters.legal_status = statusMap[legalStatus]
     }
 
-    // Add furniture status
     if (furniture !== "all") {
       const furnitureMap: { [key: string]: string } = {
         "co-ban": "basic",
@@ -186,13 +178,9 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       filters.furniture = furnitureMap[furniture]
     }
 
-    // Add house direction
     if (houseDirection !== "all") filters.house_direction = houseDirection
-
-    // Add balcony direction
     if (balconyDirection !== "all") filters.balcony_direction = balconyDirection
 
-    // Add amenities using the mapping (exclude "Tất cả")
     const amenitiesWithoutAll = selectedAmenities.filter(a => a !== "Tất cả")
     if (amenitiesWithoutAll.length > 0) {
       amenitiesWithoutAll.forEach(amenity => {
@@ -207,235 +195,224 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   }
 
   return (
-    <Card className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col">
-      {/* Header with Filter Icon */}
+    <Card className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
       <div className="border-b border-border bg-background p-4 flex items-center gap-2">
         <SlidersHorizontal className="h-5 w-5 text-[#E03C31]" />
         <h2 className="font-semibold text-foreground">Bộ lọc chi tiết</h2>
       </div>
 
-      {/* Scrollable Filter Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-      {/* 1. VỊ TRÍ - Checkbox list with search */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Vị trí
-        </label>
-        <div className="relative mb-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Tìm phường/xã..." 
-            className="h-9 pl-9 text-sm"
-            value={wardSearch}
-            onChange={(e) => setWardSearch(e.target.value)}
-          />
-        </div>
-        <div className="max-h-60 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-          {filteredWards.map((ward) => (
-            <label 
-              key={ward} 
-              className="flex items-center gap-2 py-1 px-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
-            >
-              <Checkbox 
-                checked={selectedWards.includes(ward)}
-                onCheckedChange={(checked) => handleWardChange(ward, checked as boolean)}
-              />
-              <span className={ward === "Tất cả" ? "font-medium" : ""}>{ward}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. LOẠI BĐS - Property Type Select */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Loại bđs
-        </label>
-        <Select value={propertyType} onValueChange={setPropertyType}>
-          <SelectTrigger className="h-10">
-            <SelectValue placeholder="Tất cả" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="can-ho">Căn hộ</SelectItem>
-            <SelectItem value="nha-dat">Nhà đất</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* 3. KHOẢNG GIÁ - Two inputs side by side */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Khoảng giá (VNĐ)
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <Input 
-            placeholder="Từ" 
-            className="h-10" 
-            type="number"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-          />
-          <Input 
-            placeholder="Đến" 
-            className="h-10" 
-            type="number"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* 4. DIỆN TÍCH - Range inputs side by side */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Diện tích (m²)
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <Input 
-            placeholder="Từ" 
-            className="h-10"
-            type="number"
-            value={minArea}
-            onChange={(e) => setMinArea(e.target.value)}
-          />
-          <Input 
-            placeholder="Đến" 
-            className="h-10"
-            type="number"
-            value={maxArea}
-            onChange={(e) => setMaxArea(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* 5. SỐ PHÒNG NGỦ & SỐ PHÒNG TẮM - Side by side */}
-      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Số phòng ngủ
+            Vị trí
           </label>
-          <Input 
-            placeholder="Tất cả" 
-            className="h-10"
-            type="number"
-            value={selectedBedrooms}
-            onChange={(e) => setSelectedBedrooms(e.target.value)}
-          />
+          <div className="relative mb-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Tìm phường/xã..." 
+              className="h-9 pl-9 text-sm"
+              value={wardSearch}
+              onChange={(e) => setWardSearch(e.target.value)}
+            />
+          </div>
+          <div className="max-h-60 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+            {filteredWards.map((ward) => (
+              <label 
+                key={ward} 
+                className="flex items-center gap-2 py-1 px-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={selectedWards.includes(ward)}
+                  onCheckedChange={(checked) => handleWardChange(ward, checked as boolean)}
+                />
+                <span className={ward === "Tất cả" ? "font-medium" : ""}>{ward}</span>
+              </label>
+            ))}
+          </div>
         </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Số phòng tắm
-          </label>
-          <Input 
-            placeholder="Tất cả" 
-            className="h-10"
-            type="number"
-            value={selectedBathrooms}
-            onChange={(e) => setSelectedBathrooms(e.target.value)}
-          />
-        </div>
-      </div>
 
-      {/* 6. PHÁP LÝ & NỘI THẤT - Side by side selects */}
-      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Pháp lý
+            Loại BĐS
           </label>
-          <Select value={legalStatus} onValueChange={setLegalStatus}>
+          <Select value={propertyType} onValueChange={setPropertyType}>
             <SelectTrigger className="h-10">
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="so-hong-rieng">Sổ hồng riêng</SelectItem>
-              <SelectItem value="dang-cho-so">Đang chờ sổ</SelectItem>
-              <SelectItem value="so-chung">Sổ chung</SelectItem>
-              <SelectItem value="khong-ro">Không rõ</SelectItem>
+              <SelectItem value="can-ho">Căn hộ</SelectItem>
+              <SelectItem value="nha-dat">Nhà đất</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Nội thất
-          </label>
-          <Select value={furniture} onValueChange={setFurniture}>
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Tất cả" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="co-ban">Cơ bản</SelectItem>
-              <SelectItem value="day-du">Đầy đủ</SelectItem>
-              <SelectItem value="cao-cap">Cao cấp</SelectItem>
-              <SelectItem value="khong-noi-that">Không nội thất</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      {/* 7. HƯỚNG NHÀ & HƯỚNG BAN CÔNG - Side by side selects */}
-      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Hướng nhà
+            Khoảng giá (VNĐ)
           </label>
-          <Select value={houseDirection} onValueChange={setHouseDirection}>
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Tất cả" />
-            </SelectTrigger>
-            <SelectContent>
-              {DIRECTIONS.map((direction) => (
-                <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
-                  {direction}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Input 
+              placeholder="Từ" 
+              className="h-10" 
+              type="number"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+            <Input 
+              placeholder="Đến" 
+              className="h-10" 
+              type="number"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+          </div>
         </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-            Hướng ban công
-          </label>
-          <Select value={balconyDirection} onValueChange={setBalconyDirection}>
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Tất cả" />
-            </SelectTrigger>
-            <SelectContent>
-              {DIRECTIONS.map((direction) => (
-                <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
-                  {direction}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      {/* 8. TIỆN ÍCH - Checkbox grid */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Tiện ích
-        </label>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-48 overflow-y-auto">
-          {AMENITIES.map((amenity) => (
-            <label 
-              key={amenity} 
-              className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
-            >
-              <Checkbox 
-                checked={selectedAmenities.includes(amenity)}
-                onCheckedChange={(checked) => handleAmenityChange(amenity, checked as boolean)}
-              />
-              <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Diện tích (m²)
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <Input 
+              placeholder="Từ" 
+              className="h-10"
+              type="number"
+              value={minArea}
+              onChange={(e) => setMinArea(e.target.value)}
+            />
+            <Input 
+              placeholder="Đến" 
+              className="h-10"
+              type="number"
+              value={maxArea}
+              onChange={(e) => setMaxArea(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Số phòng ngủ
             </label>
-          ))}
+            <Input 
+              placeholder="Tất cả" 
+              className="h-10"
+              type="number"
+              value={selectedBedrooms}
+              onChange={(e) => setSelectedBedrooms(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Số phòng tắm
+            </label>
+            <Input 
+              placeholder="Tất cả" 
+              className="h-10"
+              type="number"
+              value={selectedBathrooms}
+              onChange={(e) => setSelectedBathrooms(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Pháp lý
+            </label>
+            <Select value={legalStatus} onValueChange={setLegalStatus}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Tất cả" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="so-hong-rieng">Sổ hồng riêng</SelectItem>
+                <SelectItem value="dang-cho-so">Đang chờ sổ</SelectItem>
+                <SelectItem value="so-chung">Sổ chung</SelectItem>
+                <SelectItem value="khong-ro">Không rõ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Nội thất
+            </label>
+            <Select value={furniture} onValueChange={setFurniture}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Tất cả" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="co-ban">Cơ bản</SelectItem>
+                <SelectItem value="day-du">Đầy đủ</SelectItem>
+                <SelectItem value="cao-cap">Cao cấp</SelectItem>
+                <SelectItem value="khong-noi-that">Không nội thất</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Hướng nhà
+            </label>
+            <Select value={houseDirection} onValueChange={setHouseDirection}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Tất cả" />
+              </SelectTrigger>
+              <SelectContent>
+                {DIRECTIONS.map((direction) => (
+                  <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
+                    {direction}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Hướng ban công
+            </label>
+            <Select value={balconyDirection} onValueChange={setBalconyDirection}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Tất cả" />
+              </SelectTrigger>
+              <SelectContent>
+                {DIRECTIONS.map((direction) => (
+                  <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
+                    {direction}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Tiện ích
+          </label>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-48 overflow-y-auto">
+            {AMENITIES.map((amenity) => (
+              <label 
+                key={amenity} 
+                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={selectedAmenities.includes(amenity)}
+                  onCheckedChange={(checked) => handleAmenityChange(amenity, checked as boolean)}
+                />
+                <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
-      </div>
 
-      {/* Sticky Button at Bottom */}
       <div className="border-t border-border bg-white p-4">
         <Button 
           onClick={handleApplyFilters}
