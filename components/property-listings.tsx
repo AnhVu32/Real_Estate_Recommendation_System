@@ -54,6 +54,8 @@ export function PropertyListings() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -61,7 +63,7 @@ export function PropertyListings() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch("/api/properties")
+        const response = await fetch(`/api/properties?page=${currentPage}`)
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`)
@@ -72,7 +74,11 @@ export function PropertyListings() {
         
         const fetchedProperties = data.data?.properties || []
         setProperties(fetchedProperties)
-        setTotalCount(fetchedProperties.length)
+        setTotalCount(data.data?.total_count || fetchedProperties.length)
+        setTotalPages(data.data?.num_pages || 1)
+        
+        // Scroll to top smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } catch (err) {
         console.error("[v0] Fetch error:", err)
         setError(err instanceof Error ? err.message : "Failed to fetch properties")
@@ -83,7 +89,48 @@ export function PropertyListings() {
     }
 
     fetchProperties()
-  }, [])
+  }, [currentPage])
+
+  // Helper function to generate page numbers with sliding window
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const maxVisible = 5
+    
+    if (totalPages <= maxVisible) {
+      // Show all pages if totalPages is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Calculate the sliding window
+      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+      let end = Math.min(totalPages, start + maxVisible - 1)
+      
+      // Adjust start if end is at totalPages
+      if (end === totalPages) {
+        start = Math.max(1, end - maxVisible + 1)
+      }
+      
+      // Add first page if not in range
+      if (start > 1) {
+        pages.push(1)
+        if (start > 2) pages.push('...')
+      }
+      
+      // Add page numbers in range
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+      
+      // Add last page if not in range
+      if (end < totalPages) {
+        if (end < totalPages - 1) pages.push('...')
+        pages.push(totalPages)
+      }
+    }
+    
+    return pages
+  }
 
   return (
     <div>
@@ -148,25 +195,56 @@ export function PropertyListings() {
       )}
 
       {/* Pagination */}
-      {!loading && properties.length > 0 && (
-        <div className="flex items-center justify-center gap-2 mt-8">
-          <Button variant="outline" size="icon" className="h-10 w-10">
+      {!loading && properties.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 mt-8">
+          {/* Previous Button */}
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-10 w-10"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button className="h-10 w-10 bg-[#E03C31] hover:bg-[#c43428] text-white">
-            1
-          </Button>
-          <Button variant="outline" className="h-10 w-10">
-            2
-          </Button>
-          <Button variant="outline" className="h-10 w-10">
-            3
-          </Button>
-          <span className="px-2 text-muted-foreground">...</span>
-          <Button variant="outline" className="h-10 w-10">
-            12
-          </Button>
-          <Button variant="outline" size="icon" className="h-10 w-10">
+
+          {/* Page Numbers */}
+          {getPageNumbers().map((page, idx) => {
+            if (page === '...') {
+              return (
+                <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                  ...
+                </span>
+              )
+            }
+            
+            const pageNum = page as number
+            const isActive = currentPage === pageNum
+            
+            return (
+              <Button
+                key={pageNum}
+                variant={isActive ? "default" : "outline"}
+                className={`h-10 w-10 ${
+                  isActive 
+                    ? "bg-[#E03C31] hover:bg-[#c43428] text-white" 
+                    : ""
+                }`}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            )
+          })}
+
+          {/* Next Button */}
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-10 w-10"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
