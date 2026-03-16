@@ -63,6 +63,7 @@ export function PropertyListings() {
         setLoading(true)
         setError(null)
         
+        console.log("[v0] Fetching page:", currentPage)
         const response = await fetch(`/api/properties?page=${currentPage}`)
         
         if (!response.ok) {
@@ -70,12 +71,14 @@ export function PropertyListings() {
         }
 
         const data = await response.json()
-        console.log("[v0] API Response:", data)
+        console.log("[v0] API Response for page", currentPage, ":", data)
         
         const fetchedProperties = data.data?.properties || []
         setProperties(fetchedProperties)
         setTotalCount(data.data?.total_count || fetchedProperties.length)
         setTotalPages(data.data?.num_pages || 1)
+        
+        console.log("[v0] Loaded", fetchedProperties.length, "properties for page", currentPage)
         
         // Scroll to top smoothly
         window.scrollTo({ top: 0, behavior: 'smooth' })

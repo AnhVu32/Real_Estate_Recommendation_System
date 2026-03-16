@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const response = await fetch('http://34.87.56.13:1605/v1/properties', {
+    // Extract page parameter from query string
+    const page = request.nextUrl.searchParams.get('page') || '1'
+    
+    console.log('[v0] API Route: Fetching page', page)
+    
+    const response = await fetch(`http://34.87.56.13:1605/v1/properties?page=${page}`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -16,6 +21,7 @@ export async function GET() {
     }
 
     const data = await response.json()
+    console.log('[v0] API Route: Received data for page', page)
     return NextResponse.json(data)
   } catch (error) {
     console.error('[v0] API Route Error:', error)
