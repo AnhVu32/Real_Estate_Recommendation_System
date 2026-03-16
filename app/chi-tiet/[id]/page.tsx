@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { notFound } from 'next/navigation'
-import Image from 'next/image'
+import Link from 'next/link'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { PropertyDetailBreadcrumb } from '@/components/property-detail/breadcrumb'
@@ -15,6 +14,7 @@ import { LocationSection } from '@/components/property-detail/location-section'
 import { SellerCard } from '@/components/property-detail/seller-card'
 import { ContactForm } from '@/components/property-detail/contact-form'
 import { SimilarProperties } from '@/components/property-detail/similar-properties'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface PropertyData {
@@ -60,58 +60,71 @@ interface PropertyData {
   terrace: boolean
 }
 
-export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PropertyDetailPage() {
   const [property, setProperty] = useState<PropertyData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const resolveParams = async () => {
-      const resolved = await params
-      setResolvedParams(resolved)
-    }
-    resolveParams()
-  }, [params])
-
-  useEffect(() => {
-    if (!resolvedParams?.id) return
-
-    const fetchProperty = async () => {
+    // Read property data from sessionStorage
+    const selectedProperty = sessionStorage.getItem('selectedProperty')
+    
+    if (selectedProperty) {
       try {
-        setLoading(true)
-        const response = await fetch(`/api/properties/${resolvedParams.id}`)
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('not-found')
-          } else {
-            setError('Failed to fetch property')
-          }
-          return
-        }
-
-        const data = await response.json()
-
-        if (!data || Object.keys(data).length === 0) {
-          setError('not-found')
-          return
-        }
-
-        setProperty(data)
+        const parsedProperty = JSON.parse(selectedProperty)
+        setProperty(parsedProperty)
       } catch (err) {
-        console.error('Error fetching property:', err)
-        setError('Failed to fetch property')
-      } finally {
-        setLoading(false)
+        console.error('Error parsing selected property:', err)
+        setProperty(null)
       }
+    } else {
+      setProperty(null)
     }
+    
+    setIsLoading(false)
+  }, [])
 
-    fetchProperty()
-  }, [resolvedParams?.id])
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <header className="sticky top-0 z-50 w-full bg-background shadow-sm">
+          <Header />
+        </header>
 
-  if (error === 'not-found') {
-    notFound()
+        <main className="flex-1 container mx-auto px-4 py-6">
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    )
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <header className="sticky top-0 z-50 w-full bg-background shadow-sm">
+          <Header />
+        </header>
+
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold text-foreground">Không tìm thấy dữ liệu</h2>
+            <p className="text-muted-foreground">Vui lòng quay lại trang chủ và chọn một bất động sản khác.</p>
+            <Link href="/">
+              <Button className="bg-[#E03C31] hover:bg-[#c43428] text-white">
+                Quay lại trang chủ
+              </Button>
+            </Link>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -121,63 +134,50 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-6">
-        {loading ? (
-          <div className="space-y-6">
-            <Skeleton className="h-8 w-1/3" />
-            <Skeleton className="h-96 w-full" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : property ? (
-          <div className="space-y-6">
-            {/* Breadcrumb */}
-            <PropertyDetailBreadcrumb property={property} />
+        <div className="space-y-6">
+          {/* Breadcrumb */}
+          <PropertyDetailBreadcrumb property={property} />
 
-            {/* Main 2-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column - Main Content (70%) */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Image Gallery */}
-                <ImageGallery images={property.images} title={property.title} />
+          {/* Main 2-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Main Content (70%) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Image Gallery */}
+              <ImageGallery images={property.images} title={property.title} />
 
-                {/* Property Header Info */}
-                <PropertyHeader property={property} />
+              {/* Property Header Info */}
+              <PropertyHeader property={property} />
 
-                {/* Quick Specs Grid */}
-                <QuickSpecsGrid property={property} />
+              {/* Quick Specs Grid */}
+              <QuickSpecsGrid property={property} />
 
-                {/* Description Section */}
-                <DescriptionSection description={property.description} />
+              {/* Description Section */}
+              <DescriptionSection description={property.description} />
 
-                {/* Amenities Section */}
-                <AmenitiesSection property={property} />
+              {/* Amenities Section */}
+              <AmenitiesSection property={property} />
 
-                {/* Location Map Section */}
-                <LocationSection address={property.address} />
+              {/* Location Map Section */}
+              <LocationSection address={property.address} />
 
-                {/* Similar Properties */}
-                <SimilarProperties />
-              </div>
+              {/* Similar Properties */}
+              <SimilarProperties />
+            </div>
 
-              {/* Right Column - Sidebar (30%) */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-24">
-                  <div className="space-y-4">
-                    {/* Seller Contact Card */}
-                    <SellerCard />
+            {/* Right Column - Sidebar (30%) */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24">
+                <div className="space-y-4">
+                  {/* Seller Contact Card */}
+                  <SellerCard />
 
-                    {/* Contact Form */}
-                    <ContactForm />
-                  </div>
+                  {/* Contact Form */}
+                  <ContactForm />
                 </div>
               </div>
             </div>
           </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-foreground mb-2">Lỗi tải dữ liệu</h2>
-            <p className="text-muted-foreground">{error}</p>
-          </div>
-        ) : null}
+        </div>
       </main>
 
       <Footer />

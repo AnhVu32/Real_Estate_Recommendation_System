@@ -49,8 +49,13 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const imageUrl = property.images?.[0] || DEFAULT_IMAGE
   const badgeStyle = getBadgeStyle(property.listing_type)
 
+  const handleCardClick = () => {
+    // Save full property data to sessionStorage
+    sessionStorage.setItem('selectedProperty', JSON.stringify(property))
+  }
+
   return (
-    <Link href={`/chi-tiet/${property.id}`}>
+    <Link href={`/chi-tiet/${property.id}`} onClick={handleCardClick}>
       <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
         <div className="flex flex-col md:flex-row">
           {/* Image Section - Left Side */}
