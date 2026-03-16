@@ -69,18 +69,72 @@ const getOtherItems = (items: string[]) => items.filter(item => item !== "Tất 
 
 interface SidebarFilterProps {
   showSupportCard?: boolean
+  searchQuery: string
+  onSearchQueryChange: (value: string) => void
+  minPrice: string
+  maxPrice: string
+  onMinPriceChange: (value: string) => void
+  onMaxPriceChange: (value: string) => void
+  minArea: string
+  maxArea: string
+  onMinAreaChange: (value: string) => void
+  onMaxAreaChange: (value: string) => void
+  bedrooms: string
+  bathrooms: string
+  onBedroomsChange: (value: string) => void
+  onBathroomsChange: (value: string) => void
+  propertyType: string
+  onPropertyTypeChange: (value: string) => void
+  selectedWards: string[]
+  onWardsChange: (wards: string[]) => void
+  selectedLegal: string[]
+  onLegalChange: (legal: string[]) => void
+  selectedFurniture: string[]
+  onFurnitureChange: (furniture: string[]) => void
+  selectedDirection: string[]
+  onDirectionChange: (direction: string[]) => void
+  selectedBalconyDirection: string[]
+  onBalconyDirectionChange: (direction: string[]) => void
+  selectedAmenities: string[]
+  onAmenitiesChange: (amenities: string[]) => void
+  onSearch: () => void
+  isLoading?: boolean
 }
 
-export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
+export function SidebarFilter({ 
+  showSupportCard = true,
+  searchQuery,
+  onSearchQueryChange,
+  minPrice,
+  maxPrice,
+  onMinPriceChange,
+  onMaxPriceChange,
+  minArea,
+  maxArea,
+  onMinAreaChange,
+  onMaxAreaChange,
+  bedrooms,
+  bathrooms,
+  onBedroomsChange,
+  onBathroomsChange,
+  propertyType,
+  onPropertyTypeChange,
+  selectedWards,
+  onWardsChange,
+  selectedLegal,
+  onLegalChange,
+  selectedFurniture,
+  onFurnitureChange,
+  selectedDirection,
+  onDirectionChange,
+  selectedBalconyDirection,
+  onBalconyDirectionChange,
+  selectedAmenities,
+  onAmenitiesChange,
+  onSearch,
+  isLoading = false,
+}: SidebarFilterProps) {
   const [wardSearch, setWardSearch] = useState("")
-  
-  // Initialize all as selected (checked by default)
-  const [selectedWards, setSelectedWards] = useState<string[]>(WARDS)
-  const [selectedLegal, setSelectedLegal] = useState<string[]>(LEGAL_OPTIONS)
-  const [selectedFurniture, setSelectedFurniture] = useState<string[]>(FURNITURE_OPTIONS)
-  const [selectedDirection, setSelectedDirection] = useState<string[]>(DIRECTIONS)
-  const [selectedBalconyDirection, setSelectedBalconyDirection] = useState<string[]>(DIRECTIONS)
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(AMENITIES)
 
   const filteredWards = useMemo(() => {
     if (!wardSearch) return WARDS
@@ -90,44 +144,8 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
   }, [wardSearch])
 
   // Helper function to handle checkbox group changes with proper "Tất cả" logic
-  const handleCheckboxChange = (
-    item: string,
-    checked: boolean,
-    currentSelected: string[],
-    setSelected: (items: string[]) => void,
-    allItems: string[]
-  ) => {
-    const otherItems = getOtherItems(allItems)
-
-    if (item === "Tất cả") {
-      // Toggle "Tất cả"
-      if (checked) {
-        // Check all items
-        setSelected(allItems)
-      } else {
-        // Uncheck all items
-        setSelected([])
-      }
-    } else {
-      // Toggle individual item
-      let newSelected: string[]
-      if (checked) {
-        // Add item
-        newSelected = [...currentSelected, item]
-      } else {
-        // Remove item and also remove "Tất cả"
-        newSelected = currentSelected.filter(i => i !== item && i !== "Tất cả")
-      }
-
-      // Auto-check "Tất cả" if all other items are selected
-      if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
-        newSelected = allItems
-      }
-
-      setSelected(newSelected)
-    }
-  }
-
+  // This is now handled inline in each checkbox
+  
   const getCheckedCount = (selected: string[], allItems: string[]) => {
     return selected.length === allItems.length ? "Tất cả" : `${selected.length}/${allItems.length}`
   }
@@ -167,10 +185,27 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                       key={ward} 
                       className="flex items-center gap-2 py-1 px-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
                     >
-                      <Checkbox 
-                        checked={selectedWards.includes(ward)}
-                        onCheckedChange={(checked) => handleCheckboxChange(ward, checked as boolean, selectedWards, setSelectedWards, WARDS)}
-                      />
+                    <Checkbox 
+                      checked={selectedWards.includes(ward)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(WARDS)
+                        if (ward === "Tất cả") {
+                          if (checked) {
+                            onWardsChange(WARDS)
+                          } else {
+                            onWardsChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedWards, ward]
+                            : selectedWards.filter(i => i !== ward && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = WARDS
+                          }
+                          onWardsChange(newSelected)
+                        }
+                      }}
+                    />
                       <span className={ward === "Tất cả" ? "font-medium" : ""}>{ward}</span>
                     </label>
                   ))}
@@ -195,7 +230,24 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                   >
                     <Checkbox 
                       checked={selectedLegal.includes(option)}
-                      onCheckedChange={(checked) => handleCheckboxChange(option, checked as boolean, selectedLegal, setSelectedLegal, LEGAL_OPTIONS)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(LEGAL_OPTIONS)
+                        if (option === "Tất cả") {
+                          if (checked) {
+                            onLegalChange(LEGAL_OPTIONS)
+                          } else {
+                            onLegalChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedLegal, option]
+                            : selectedLegal.filter(i => i !== option && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = LEGAL_OPTIONS
+                          }
+                          onLegalChange(newSelected)
+                        }
+                      }}
                     />
                     <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
                   </label>
@@ -220,7 +272,24 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                   >
                     <Checkbox 
                       checked={selectedFurniture.includes(option)}
-                      onCheckedChange={(checked) => handleCheckboxChange(option, checked as boolean, selectedFurniture, setSelectedFurniture, FURNITURE_OPTIONS)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(FURNITURE_OPTIONS)
+                        if (option === "Tất cả") {
+                          if (checked) {
+                            onFurnitureChange(FURNITURE_OPTIONS)
+                          } else {
+                            onFurnitureChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedFurniture, option]
+                            : selectedFurniture.filter(i => i !== option && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = FURNITURE_OPTIONS
+                          }
+                          onFurnitureChange(newSelected)
+                        }
+                      }}
                     />
                     <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
                   </label>
@@ -245,7 +314,24 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                   >
                     <Checkbox 
                       checked={selectedDirection.includes(direction)}
-                      onCheckedChange={(checked) => handleCheckboxChange(direction, checked as boolean, selectedDirection, setSelectedDirection, DIRECTIONS)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(DIRECTIONS)
+                        if (direction === "Tất cả") {
+                          if (checked) {
+                            onDirectionChange(DIRECTIONS)
+                          } else {
+                            onDirectionChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedDirection, direction]
+                            : selectedDirection.filter(i => i !== direction && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = DIRECTIONS
+                          }
+                          onDirectionChange(newSelected)
+                        }
+                      }}
                     />
                     <span className={direction === "Tất cả" ? "font-medium" : ""}>{direction}</span>
                   </label>
@@ -270,7 +356,24 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                   >
                     <Checkbox 
                       checked={selectedBalconyDirection.includes(direction)}
-                      onCheckedChange={(checked) => handleCheckboxChange(direction, checked as boolean, selectedBalconyDirection, setSelectedBalconyDirection, DIRECTIONS)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(DIRECTIONS)
+                        if (direction === "Tất cả") {
+                          if (checked) {
+                            onBalconyDirectionChange(DIRECTIONS)
+                          } else {
+                            onBalconyDirectionChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedBalconyDirection, direction]
+                            : selectedBalconyDirection.filter(i => i !== direction && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = DIRECTIONS
+                          }
+                          onBalconyDirectionChange(newSelected)
+                        }
+                      }}
                     />
                     <span className={direction === "Tất cả" ? "font-medium" : ""}>{direction}</span>
                   </label>
@@ -295,7 +398,24 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
                   >
                     <Checkbox 
                       checked={selectedAmenities.includes(amenity)}
-                      onCheckedChange={(checked) => handleCheckboxChange(amenity, checked as boolean, selectedAmenities, setSelectedAmenities, AMENITIES)}
+                      onCheckedChange={(checked) => {
+                        const otherItems = getOtherItems(AMENITIES)
+                        if (amenity === "Tất cả") {
+                          if (checked) {
+                            onAmenitiesChange(AMENITIES)
+                          } else {
+                            onAmenitiesChange([])
+                          }
+                        } else {
+                          let newSelected: string[] = checked as boolean 
+                            ? [...selectedAmenities, amenity]
+                            : selectedAmenities.filter(i => i !== amenity && i !== "Tất cả")
+                          if (newSelected.length > 0 && getOtherItems(newSelected).length === otherItems.length) {
+                            newSelected = AMENITIES
+                          }
+                          onAmenitiesChange(newSelected)
+                        }
+                      }}
                     />
                     <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
                   </label>
@@ -312,7 +432,7 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
               Loại bđs
             </label>
-            <Select>
+            <Select value={propertyType} onValueChange={onPropertyTypeChange}>
               <SelectTrigger className="h-10">
                 <SelectValue placeholder="Tất cả" />
               </SelectTrigger>
@@ -330,52 +450,78 @@ export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {
               Khoảng giá (VNĐ)
             </label>
             <div className="flex items-center gap-2">
-              <Input placeholder="Từ" className="h-10" />
+              <Input 
+                placeholder="Từ" 
+                className="h-10" 
+                value={minPrice}
+                onChange={(e) => onMinPriceChange(e.target.value)}
+              />
               <span className="text-muted-foreground">-</span>
-              <Input placeholder="Đến" className="h-10" />
+              <Input 
+                placeholder="Đến" 
+                className="h-10" 
+                value={maxPrice}
+                onChange={(e) => onMaxPriceChange(e.target.value)}
+              />
             </div>
           </div>
 
-          {/* 4. BIẾN ĐỘNG TRONG 1 NĂM QUA */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-              Biến động trong 1 năm qua
-            </label>
-            <div className="flex items-center gap-2">
-              <Input placeholder="Từ" className="h-10" />
-              <span className="text-muted-foreground">-</span>
-              <Input placeholder="Đến" className="h-10" />
-            </div>
-          </div>
-
-          {/* 5. DIỆN TÍCH */}
+          {/* 4. DIỆN TÍCH */}
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
               Diện tích (m²)
             </label>
-            <Input placeholder="Ví dụ: 100" className="h-10" />
+            <div className="flex items-center gap-2">
+              <Input 
+                placeholder="Từ" 
+                className="h-10" 
+                value={minArea}
+                onChange={(e) => onMinAreaChange(e.target.value)}
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input 
+                placeholder="Đến" 
+                className="h-10" 
+                value={maxArea}
+                onChange={(e) => onMaxAreaChange(e.target.value)}
+              />
+            </div>
           </div>
 
-          {/* 6. SỐ PHÒNG NGỦ & SỐ PHÒNG TẮM - side by side inputs */}
+          {/* 5. SỐ PHÒNG NGỦ & SỐ PHÒNG TẮM - side by side inputs */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
                 Số phòng ngủ
               </label>
-              <Input placeholder="Tất cả" className="h-10" />
+              <Input 
+                placeholder="Tất cả" 
+                className="h-10" 
+                value={bedrooms}
+                onChange={(e) => onBedroomsChange(e.target.value)}
+              />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
                 Số phòng tắm
               </label>
-              <Input placeholder="Tất cả" className="h-10" />
+              <Input 
+                placeholder="Tất cả" 
+                className="h-10" 
+                value={bathrooms}
+                onChange={(e) => onBathroomsChange(e.target.value)}
+              />
             </div>
           </div>
         </div>
 
         {/* Apply Filter Button */}
-        <Button className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-11 mt-6">
-          Áp dụng bộ lọc
+        <Button 
+          onClick={onSearch}
+          disabled={isLoading}
+          className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-11 mt-6"
+        >
+          {isLoading ? 'Đang tìm kiếm...' : 'Áp dụng bộ lọc'}
         </Button>
       </div>
 
