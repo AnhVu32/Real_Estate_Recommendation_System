@@ -61,7 +61,7 @@ export function PropertyListings() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch("http://34.87.56.13:1605/v1/properties")
+        const response = await fetch("/api/properties")
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`)
