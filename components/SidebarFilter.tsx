@@ -1,74 +1,72 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { SlidersHorizontal, Search } from "lucide-react"
+import { useState } from "react"
+import { SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-
-const WARDS = [
-  "Tất cả", "An Đông", "An Hội Đông", "An Hội Tây", "An Khánh", "An Lạc", "An Long", "An Nhơn", 
-  "An Nhơn Tây", "An Phú", "An Phú Đông", "An Thới Đông", "Bà Điểm", "Bà Rịa", "Bắc Tân Uyên", 
-  "Bàn Cờ", "Bàu Bàng", "Bàu Lâm", "Bảy Hiền", "Bến Cát", "Bến Thành", "Bình Chánh", "Bình Châu", 
-  "Bình Cơ", "Bình Đông", "Bình Dương", "Bình Giã", "Bình Hòa", "Bình Hưng", "Bình Hưng Hòa", 
-  "Bình Khánh", "Bình Lợi", "Bình Lợi Trung", "Bình Mỹ", "Bình Phú", "Bình Quới", "Bình Tân", 
-  "Bình Tây", "Bình Thạnh", "Bình Thời", "Bình Tiên", "Bình Trị Đông", "Bình Trưng", "Cần Giờ", 
-  "Cát Lái", "Cầu Kiệu", "Cầu Ông Lãnh", "Chánh Hiệp", "Chánh Hưng", "Chánh Phú Hòa", "Châu Đức", 
-  "Châu Pha", "Chợ Lớn", "Chợ Quán", "Côn Đảo", "Củ Chi", "Đất Đỏ", "Dầu Tiếng", "Dĩ An", 
-  "Diên Hồng", "Đông Hòa", "Đông Hưng Thuận", "Đông Thạnh", "Đức Nhuận", "Gia Định", "Gò Vấp", 
-  "Hạnh Thông", "Hiệp Bình", "Hiệp Phước", "Hồ Tràm", "Hòa Bình", "Hòa Hiệp", "Hòa Hội", 
-  "Hòa Hưng", "Hòa Lợi", "Hóc Môn", "Hưng Long", "Khánh Hội", "Kim Long", "Lái Thiêu", 
-  "Linh Xuân", "Long Bình", "Long Điền", "Long Hải", "Long Hòa", "Long Hương", "Long Nguyên", 
-  "Long Phước", "Long Sơn", "Long Trường", "Minh Phụng", "Minh Thạnh", "Ngãi Giao", "Nghĩa Thành", 
-  "Ngọc Hà", "Nhà Bè", "Nhiêu Lộc", "Nhuận Đức", "Phú An", "Phú Định", "Phú Giáo", "Phú Hòa Đông", 
-  "Phú Lâm", "Phú Lợi", "Phú Mỹ", "Phú Nhuận", "Phú Thạnh", "Phú Thọ", "Phú Thọ Hòa", "Phú Thuận", 
-  "Phước Hải", "Phước Hòa", "Phước Long", "Phước Thắng", "Phước Thành", "Rạch Dừa", "Sài Gòn", 
-  "Tam Bình", "Tam Long", "Tam Thắng", "Tân An Hội", "Tân Bình", "Tân Định", "Tân Đông Hiệp", 
-  "Tân Hải", "Tân Hiệp", "Tân Hòa", "Tân Hưng", "Tân Khánh", "Tân Mỹ", "Tân Nhựt", "Tân Phú", 
-  "Tân Phước", "Tân Sơn", "Tân Sơn Hòa", "Tân Sơn Nhất", "Tân Sơn Nhì", "Tân Tạo", "Tân Thành", 
-  "Tân Thới Hiệp", "Tân Thuận", "Tân Uyên", "Tân Vĩnh Lộc", "Tăng Nhơn Phú", "Tây Nam", "Tây Thạnh", 
-  "Thái Mỹ", "Thạnh An", "Thanh An", "Thạnh Mỹ Tây", "Thời An", "Thời Hòa", "Thông Tây Hội", 
-  "Thủ Đức", "Thuận An", "Thuận Giao", "Trà Vinh", "Trảng Bàng", "Trường Thọ", "Vĩnh Cửu", 
-  "Vĩnh Lộc", "Vĩnh Phú", "Vũng Tàu", "Xuyên Mộc"
-]
-
-const AMENITIES = [
-  "Tất cả", "Hồ bơi", "Gym", "Khuôn viên", "BBQ", "Khu vui chơi trẻ em", "Sân thể thao", 
-  "An ninh 24h", "Lễ tân", "Thang máy", "Bãi đậu xe", "Gần Metro", "Gần Bus", "Gần cao tốc", 
-  "Gần trường", "Gần bệnh viện", "Gần siêu thị", "Gần chợ", "Gần công viên", "View sông", 
-  "View công viên", "View thành phố", "Ban công", "Vườn", "Garage", "Sân thượng"
-]
-
-const DIRECTIONS = [
-  "Tất cả", "Tây - Nam", "Đông - Nam", "Bắc", "Nam", "Đông - Bắc", "Tây - Bắc", "Tây", "Đông", "Không rõ"
-]
-
-const LEGAL_OPTIONS = [
-  "Tất cả", "Sổ hồng riêng", "Đang chờ sổ", "Sổ chung", "Không rõ"
-]
-
-const FURNITURE_OPTIONS = [
-  "Tất cả", "Cơ bản", "Đầy đủ", "Cao cấp", "Không nội thất"
-]
-
-// Helper to get all items excluding "Tất cả"
-const getOtherItems = (items: string[]) => items.filter(item => item !== "Tất cả")
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { AdvancedFilter } from "@/components/advanced-filter"
 
 interface SidebarFilterProps {
+  onApplyFilters?: (filters: any) => void
   showSupportCard?: boolean
+}
+
+export function SidebarFilter({ onApplyFilters, showSupportCard = true }: SidebarFilterProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleApplyFilters = (filters: any) => {
+    console.log("[v0] SidebarFilter received filters:", filters)
+    onApplyFilters?.(filters)
+    setIsOpen(false)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Filter Card */}
+      <div className="bg-card border border-border rounded-lg p-5">
+        <div className="flex items-center gap-2 mb-6">
+          <SlidersHorizontal className="h-5 w-5 text-[#E03C31]" />
+          <h2 className="font-semibold text-foreground">Bộ lọc chi tiết</h2>
+        </div>
+
+        {/* Open Advanced Filter Dialog */}
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-11">
+              Tùy chỉnh bộ lọc
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Tìm kiếm chuyên sâu</DialogTitle>
+            </DialogHeader>
+            <AdvancedFilter onApplyFilters={handleApplyFilters} />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Support CTA Card - Conditional rendering */}
+      {showSupportCard && (
+        <div className="bg-[#FFF5F4] border border-[#E03C31]/20 rounded-lg p-5">
+          <h3 className="font-semibold text-[#E03C31] mb-2">
+            Bạn cần hỗ trợ chuyên nghiệp?
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Các chuyên viên của chúng tôi luôn sẵn sàng hỗ trợ bạn tìm thấy ngôi nhà mơ ước.
+          </p>
+          <Button className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-11">
+            Tìm môi giới
+          </Button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function SidebarFilter({ showSupportCard = true }: SidebarFilterProps) {

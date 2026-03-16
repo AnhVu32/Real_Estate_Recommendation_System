@@ -26,6 +26,14 @@ interface Property {
   posted_date: string
 }
 
+interface PropertyListingsProps {
+  activeFilters?: any
+  sortOption?: string
+  onSortChange?: (value: string) => void
+  currentPage?: number
+  onPageChange?: (page: number) => void
+}
+
 const SKELETON_COUNT = 5
 
 function PropertyCardSkeleton() {
@@ -49,39 +57,78 @@ function PropertyCardSkeleton() {
   )
 }
 
-export function PropertyListings() {
+export function PropertyListings({
+  activeFilters = {},
+  sortOption = "newest",
+  onSortChange = () => {},
+  currentPage = 1,
+  onPageChange = () => {},
+}: PropertyListingsProps) {
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [internalPage, setInternalPage] = useState(currentPage)
+
+  // Build query parameters from activeFilters and sortOption
+  const buildQueryParams = () => {
+    const searchParams = new URLSearchParams()
+
+    // Add page
+    searchParams.append("page", internalPage.toString())
+
+    // Map sortOption to API parameters
+    if (sortOption === "newest") {
+      searchParams.append("sort_by", "newest")
+      searchParams.append("sort_order", "desc")
+    } else if (sortOption === "oldest") {
+      searchParams.append("sort_by", "oldest")
+      searchParams.append("sort_order", "asc")
+    } else if (sortOption === "price_asc") {
+      searchParams.append("sort_by", "price_asc")
+      searchParams.append("sort_order", "asc")
+    } else if (sortOption === "price_desc") {
+      searchParams.append("sort_by", "price_desc")
+      searchParams.append("sort_order", "desc")
+    }
+
+    // Add all active filters
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== "") {
+        searchParams.append(key, String(value))
+      }
+    })
+
+    return searchParams.toString()
+  }
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true)
         setError(null)
+
+        const queryString = buildQueryParams()
+        console.log("[v0] Fetching with query:", queryString)
         
-        console.log("[v0] Fetching page:", currentPage)
-        const response = await fetch(`/api/properties?page=${currentPage}`)
+        const response = await fetch(`http://34.87.56.13:1605/v1/properties?${queryString}`)
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`)
         }
 
         const data = await response.json()
-        console.log("[v0] API Response for page", currentPage, ":", data)
+        console.log("[v0] API Response:", data)
         
         const fetchedProperties = data.data?.properties || []
-        // Extract total count from data.total (the global total, not per-page)
         const total = data.data?.total || data.total || fetchedProperties.length
         
         setProperties(fetchedProperties)
         setTotalCount(total)
         setTotalPages(data.data?.num_pages || 1)
         
-        console.log("[v0] Loaded", fetchedProperties.length, "properties for page", currentPage, "Total:", total)
+        console.log("[v0] Loaded", fetchedProperties.length, "properties. Total:", total)
         
         // Scroll to top smoothly
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -95,7 +142,7 @@ export function PropertyListings() {
     }
 
     fetchProperties()
-  }, [currentPage])
+  }, [internalPage, activeFilters, sortOption])
 
   // Helper function to generate page numbers with sliding window
   const getPageNumbers = () => {
@@ -109,7 +156,7 @@ export function PropertyListings() {
       }
     } else {
       // Calculate the sliding window
-      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+      let start = Math.max(1, internalPage - Math.floor(maxVisible / 2))
       let end = Math.min(totalPages, start + maxVisible - 1)
       
       // Adjust start if end is at totalPages
@@ -138,9 +185,18 @@ export function PropertyListings() {
     return pages
   }
 
+  const handleSortChange = (value: string) => {
+    onSortChange(value)
+  }
+
+  const handlePageChange = (page: number) => {
+    setInternalPage(page)
+    onPageChange(page)
+  }
+
   return (
     <div>
-      {/* Header */}
+      {/* Header with sort */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-foreground">
@@ -153,16 +209,15 @@ export function PropertyListings() {
 
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Sắp xếp:</span>
-          <Select defaultValue="newest">
+          <Select value={sortOption} onValueChange={handleSortChange}>
             <SelectTrigger className="w-[180px] h-10">
               <SelectValue placeholder="Sắp xếp theo" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Tin mới nhất</SelectItem>
-              <SelectItem value="price-asc">Giá thấp đến cao</SelectItem>
-              <SelectItem value="price-desc">Giá cao đến thấp</SelectItem>
-              <SelectItem value="area-asc">Diện tích nhỏ đến lớn</SelectItem>
-              <SelectItem value="area-desc">Diện tích lớn đến nhỏ</SelectItem>
+              <SelectItem value="oldest">Tin cũ nhất</SelectItem>
+              <SelectItem value="price_asc">Giá thấp đến cao</SelectItem>
+              <SelectItem value="price_desc">Giá cao đến thấp</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -208,8 +263,8 @@ export function PropertyListings() {
             variant="outline" 
             size="icon" 
             className="h-10 w-10"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={internalPage === 1}
+            onClick={() => handlePageChange(Math.max(internalPage - 1, 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -225,7 +280,7 @@ export function PropertyListings() {
             }
             
             const pageNum = page as number
-            const isActive = currentPage === pageNum
+            const isActive = internalPage === pageNum
             
             return (
               <Button
@@ -236,7 +291,7 @@ export function PropertyListings() {
                     ? "bg-[#E03C31] hover:bg-[#c43428] text-white" 
                     : ""
                 }`}
-                onClick={() => setCurrentPage(pageNum)}
+                onClick={() => handlePageChange(pageNum)}
               >
                 {pageNum}
               </Button>
@@ -248,8 +303,8 @@ export function PropertyListings() {
             variant="outline" 
             size="icon" 
             className="h-10 w-10"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={internalPage === totalPages}
+            onClick={() => handlePageChange(Math.min(internalPage + 1, totalPages))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

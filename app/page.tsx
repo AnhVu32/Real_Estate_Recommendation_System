@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useCallback } from "react"
 import { Header } from "@/components/header"
 import { SearchBar } from "@/components/search-bar"
 import { SidebarFilter } from "@/components/SidebarFilter"
@@ -5,6 +8,16 @@ import { PropertyListings } from "@/components/property-listings"
 import { Footer } from "@/components/footer"
 
 export default function RealEstatePage() {
+  const [activeFilters, setActiveFilters] = useState<any>({})
+  const [sortOption, setSortOption] = useState("newest")
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const handleApplyFilters = useCallback((filters: any) => {
+    console.log("[v0] Filters applied:", filters)
+    setActiveFilters(filters)
+    setCurrentPage(1) // Reset to first page when filters change
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 w-full bg-background shadow-sm">
@@ -16,12 +29,18 @@ export default function RealEstatePage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Fixed 1/4 width */}
           <aside className="lg:col-span-1">
-            <SidebarFilter />
+            <SidebarFilter onApplyFilters={handleApplyFilters} />
           </aside>
           
           {/* Right Main Column - 3/4 width */}
           <section className="lg:col-span-3">
-            <PropertyListings />
+            <PropertyListings 
+              activeFilters={activeFilters}
+              sortOption={sortOption}
+              onSortChange={setSortOption}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
           </section>
         </div>
       </main>

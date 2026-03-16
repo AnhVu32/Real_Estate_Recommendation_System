@@ -19,7 +19,7 @@ const WARDS = [
   "Bàn Cờ", "Bàu Bàng", "Bàu Lâm", "Bảy Hiền", "Bến Cát", "Bến Thành", "Bình Chánh", "Bình Châu", 
   "Bình Cơ", "Bình Đông", "Bình Dương", "Bình Giã", "Bình Hòa", "Bình Hưng", "Bình Hưng Hòa", 
   "Bình Khánh", "Bình Lợi", "Bình Lợi Trung", "Bình Mỹ", "Bình Phú", "Bình Quới", "Bình Tân", 
-  "Bình Tây", "Bình Thạnh", "Bình Thới", "Bình Tiên", "Bình Trị Đông", "Bình Trưng", "Cần Giờ", 
+  "Bình Tây", "Bình Thạnh", "Bình Thời", "Bình Tiên", "Bình Trị Đông", "Bình Trưng", "Cần Giờ", 
   "Cát Lái", "Cầu Kiệu", "Cầu Ông Lãnh", "Chánh Hiệp", "Chánh Hưng", "Chánh Phú Hòa", "Châu Đức", 
   "Châu Pha", "Chợ Lớn", "Chợ Quán", "Côn Đảo", "Củ Chi", "Đất Đỏ", "Dầu Tiếng", "Dĩ An", 
   "Diên Hồng", "Đông Hòa", "Đông Hưng Thuận", "Đông Thạnh", "Đức Nhuận", "Gia Định", "Gò Vấp", 
@@ -33,8 +33,8 @@ const WARDS = [
   "Tam Bình", "Tam Long", "Tam Thắng", "Tân An Hội", "Tân Bình", "Tân Định", "Tân Đông Hiệp", 
   "Tân Hải", "Tân Hiệp", "Tân Hòa", "Tân Hưng", "Tân Khánh", "Tân Mỹ", "Tân Nhựt", "Tân Phú", 
   "Tân Phước", "Tân Sơn", "Tân Sơn Hòa", "Tân Sơn Nhất", "Tân Sơn Nhì", "Tân Tạo", "Tân Thành", 
-  "Tân Thới Hiệp", "Tân Thuận", "Tân Uyên", "Tân Vĩnh Lộc", "Tăng Nhơn Phú", "Tây Nam", "Tây Thạnh", 
-  "Thái Mỹ", "Thạnh An", "Thanh An", "Thạnh Mỹ Tây", "Thới An", "Thới Hòa", "Thông Tây Hội", 
+  "Tân Thời Hiệp", "Tân Thuận", "Tân Uyên", "Tân Vĩnh Lộc", "Tăng Nhơn Phú", "Tây Nam", "Tây Thạnh", 
+  "Thái Mỹ", "Thạnh An", "Thanh An", "Thạnh Mỹ Tây", "Thời An", "Thời Hòa", "Thông Tây Hội", 
   "Thủ Đức", "Thuận An", "Thuận Giao", "Trà Vinh", "Trảng Bàng", "Trường Thọ", "Vĩnh Cửu", 
   "Vĩnh Lộc", "Vĩnh Phú", "Vũng Tàu", "Xuyên Mộc"
 ]
@@ -50,9 +50,53 @@ const DIRECTIONS = [
   "Tất cả", "Tây - Nam", "Đông - Nam", "Bắc", "Nam", "Đông - Bắc", "Tây - Bắc", "Tây", "Đông", "Không rõ"
 ]
 
-export function AdvancedFilter() {
+// Mapping from Vietnamese amenity names to backend query parameters
+const AMENITY_MAPPING: { [key: string]: string } = {
+  "Hồ bơi": "pool",
+  "Gym": "gym",
+  "Khuôn viên": "park",
+  "BBQ": "bbq",
+  "Khu vui chơi trẻ em": "kids_playground",
+  "Sân thể thao": "sports_court",
+  "An ninh 24h": "security_24h",
+  "Lễ tân": "reception",
+  "Thang máy": "elevator",
+  "Bãi đậu xe": "parking",
+  "Gần Metro": "near_metro",
+  "Gần Bus": "near_bus",
+  "Gần cao tốc": "near_highway",
+  "Gần trường": "near_school",
+  "Gần bệnh viện": "near_hospital",
+  "Gần siêu thị": "near_mall",
+  "Gần chợ": "near_market",
+  "Gần công viên": "near_park",
+  "View sông": "river_view",
+  "View công viên": "park_view",
+  "View thành phố": "city_view",
+  "Ban công": "balcony",
+  "Vườn": "garden",
+  "Garage": "garage",
+  "Sân thượng": "terrace"
+}
+
+interface AdvancedFilterProps {
+  onApplyFilters: (filters: any) => void
+}
+
+export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   const [wardSearch, setWardSearch] = useState("")
   const [selectedWards, setSelectedWards] = useState<string[]>([])
+  const [minPrice, setMinPrice] = useState("")
+  const [maxPrice, setMaxPrice] = useState("")
+  const [minArea, setMinArea] = useState("")
+  const [maxArea, setMaxArea] = useState("")
+  const [selectedBedrooms, setSelectedBedrooms] = useState("")
+  const [selectedBathrooms, setSelectedBathrooms] = useState("")
+  const [propertyType, setPropertyType] = useState("all")
+  const [legalStatus, setLegalStatus] = useState("all")
+  const [furniture, setFurniture] = useState("all")
+  const [houseDirection, setHouseDirection] = useState("all")
+  const [balconyDirection, setBalconyDirection] = useState("all")
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
 
   const filteredWards = useMemo(() => {
@@ -69,6 +113,97 @@ export function AdvancedFilter() {
       } else {
         setSelectedWards([])
       }
+    } else {
+      if (checked) {
+        const newSelected = [...selectedWards, ward]
+        if (newSelected.length === WARDS.length - 1) {
+          setSelectedWards(WARDS)
+        } else {
+          setSelectedWards(newSelected)
+        }
+      } else {
+        setSelectedWards(selectedWards.filter(w => w !== ward && w !== "Tất cả"))
+      }
+    }
+  }
+
+  const handleAmenityChange = (amenity: string, checked: boolean) => {
+    if (amenity === "Tất cả") {
+      if (checked) {
+        setSelectedAmenities(AMENITIES)
+      } else {
+        setSelectedAmenities([])
+      }
+    } else {
+      if (checked) {
+        const newSelected = [...selectedAmenities, amenity]
+        if (newSelected.length === AMENITIES.length - 1) {
+          setSelectedAmenities(AMENITIES)
+        } else {
+          setSelectedAmenities(newSelected)
+        }
+      } else {
+        setSelectedAmenities(selectedAmenities.filter(a => a !== amenity && a !== "Tất cả"))
+      }
+    }
+  }
+
+  const handleApplyFilters = () => {
+    const filters: any = {}
+
+    // Add price filters
+    if (minPrice) filters.min_price = parseFloat(minPrice)
+    if (maxPrice) filters.max_price = parseFloat(maxPrice)
+
+    // Add area filters
+    if (minArea) filters.min_area = parseFloat(minArea)
+    if (maxArea) filters.max_area = parseFloat(maxArea)
+
+    // Add bedrooms/bathrooms
+    if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
+    if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
+
+    // Add legal status
+    if (legalStatus !== "all") {
+      const statusMap: { [key: string]: string } = {
+        "so-hong-rieng": "own_certificate",
+        "dang-cho-so": "pending",
+        "so-chung": "shared",
+        "khong-ro": "unknown"
+      }
+      filters.legal_status = statusMap[legalStatus]
+    }
+
+    // Add furniture status
+    if (furniture !== "all") {
+      const furnitureMap: { [key: string]: string } = {
+        "co-ban": "basic",
+        "day-du": "full",
+        "cao-cap": "luxury",
+        "khong-noi-that": "none"
+      }
+      filters.furniture = furnitureMap[furniture]
+    }
+
+    // Add house direction
+    if (houseDirection !== "all") filters.house_direction = houseDirection
+
+    // Add balcony direction
+    if (balconyDirection !== "all") filters.balcony_direction = balconyDirection
+
+    // Add amenities using the mapping (exclude "Tất cả")
+    const amenitiesWithoutAll = selectedAmenities.filter(a => a !== "Tất cả")
+    if (amenitiesWithoutAll.length > 0) {
+      amenitiesWithoutAll.forEach(amenity => {
+        const apiParam = AMENITY_MAPPING[amenity]
+        if (apiParam) {
+          filters[apiParam] = true
+        }
+      })
+    }
+
+    onApplyFilters(filters)
+  }
     } else {
       if (checked) {
         const newSelected = [...selectedWards, ward]
@@ -149,7 +284,7 @@ export function AdvancedFilter() {
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
           Loại bđs
         </label>
-        <Select>
+        <Select value={propertyType} onValueChange={setPropertyType}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Tất cả" />
           </SelectTrigger>
@@ -167,53 +302,81 @@ export function AdvancedFilter() {
           Khoảng giá (VNĐ)
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <Input placeholder="Từ" className="h-10" />
-          <Input placeholder="Đến" className="h-10" />
+          <Input 
+            placeholder="Từ" 
+            className="h-10" 
+            type="number"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+          />
+          <Input 
+            placeholder="Đến" 
+            className="h-10" 
+            type="number"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* 4. BIẾN ĐỘNG TRONG 1 NĂM QUA - Two inputs side by side */}
-      <div>
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-          Biến động trong 1 năm qua
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <Input placeholder="Từ" className="h-10" />
-          <Input placeholder="Đến" className="h-10" />
-        </div>
-      </div>
-
-      {/* 5. DIỆN TÍCH - Single input */}
+      {/* 4. DIỆN TÍCH - Range inputs side by side */}
       <div>
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
           Diện tích (m²)
         </label>
-        <Input placeholder="Ví dụ: 100" className="h-10" />
+        <div className="grid grid-cols-2 gap-3">
+          <Input 
+            placeholder="Từ" 
+            className="h-10"
+            type="number"
+            value={minArea}
+            onChange={(e) => setMinArea(e.target.value)}
+          />
+          <Input 
+            placeholder="Đến" 
+            className="h-10"
+            type="number"
+            value={maxArea}
+            onChange={(e) => setMaxArea(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* 6. SỐ PHÒNG NGỦ & SỐ PHÒNG TẮM - Side by side */}
+      {/* 5. SỐ PHÒNG NGỦ & SỐ PHÒNG TẮM - Side by side */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Số phòng ngủ
           </label>
-          <Input placeholder="Tất cả" className="h-10" />
+          <Input 
+            placeholder="Tất cả" 
+            className="h-10"
+            type="number"
+            value={selectedBedrooms}
+            onChange={(e) => setSelectedBedrooms(e.target.value)}
+          />
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Số phòng tắm
           </label>
-          <Input placeholder="Tất cả" className="h-10" />
+          <Input 
+            placeholder="Tất cả" 
+            className="h-10"
+            type="number"
+            value={selectedBathrooms}
+            onChange={(e) => setSelectedBathrooms(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* 7. PHÁP LÝ & NỘI THẤT - Side by side selects */}
+      {/* 6. PHÁP LÝ & NỘI THẤT - Side by side selects */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Pháp lý
           </label>
-          <Select>
+          <Select value={legalStatus} onValueChange={setLegalStatus}>
             <SelectTrigger className="h-10">
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
@@ -230,7 +393,7 @@ export function AdvancedFilter() {
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Nội thất
           </label>
-          <Select>
+          <Select value={furniture} onValueChange={setFurniture}>
             <SelectTrigger className="h-10">
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
@@ -245,13 +408,13 @@ export function AdvancedFilter() {
         </div>
       </div>
 
-      {/* 8. HƯỚNG NHÀ & HƯỚNG BAN CÔNG - Side by side selects */}
+      {/* 7. HƯỚNG NHÀ & HƯỚNG BAN CÔNG - Side by side selects */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Hướng nhà
           </label>
-          <Select>
+          <Select value={houseDirection} onValueChange={setHouseDirection}>
             <SelectTrigger className="h-10">
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
@@ -268,7 +431,7 @@ export function AdvancedFilter() {
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Hướng ban công
           </label>
-          <Select>
+          <Select value={balconyDirection} onValueChange={setBalconyDirection}>
             <SelectTrigger className="h-10">
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
@@ -283,7 +446,7 @@ export function AdvancedFilter() {
         </div>
       </div>
 
-      {/* 9. TIỆN ÍCH - Checkbox grid */}
+      {/* 8. TIỆN ÍCH - Checkbox grid */}
       <div>
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
           Tiện ích
@@ -305,7 +468,10 @@ export function AdvancedFilter() {
       </div>
 
       {/* Apply Filter Button */}
-      <Button className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-12 text-base font-medium">
+      <Button 
+        onClick={handleApplyFilters}
+        className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-12 text-base font-medium"
+      >
         Áp dụng bộ lọc
       </Button>
     </div>
