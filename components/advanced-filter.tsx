@@ -102,7 +102,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   const [selectedBathrooms, setSelectedBathrooms] = useState("")
   const [propertyType, setPropertyType] = useState("all")
   
-  // Array states for 4 checkbox groups with true Select All behavior
+  // Array states for 4 checkbox groups with exact Vietnamese strings
   const [selectedLegalStatus, setSelectedLegalStatus] = useState<string[]>([])
   const [selectedFurniture, setSelectedFurniture] = useState<string[]>([])
   const [selectedHouseDirection, setSelectedHouseDirection] = useState<string[]>([])
@@ -169,17 +169,17 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
 
   const handleAmenityChange = (amenity: string, checked: boolean) => {
     if (amenity === "Tất cả") {
-      setSelectedAmenities(checked ? AMENITIES : [])
+      setSelectedAmenities(checked ? AMENITIES.filter(a => a !== "Tất cả") : [])
     } else {
       if (checked) {
         const newSelected = [...selectedAmenities, amenity]
         if (newSelected.length === AMENITIES.length - 1) {
-          setSelectedAmenities(AMENITIES)
+          setSelectedAmenities(AMENITIES.filter(a => a !== "Tất cả"))
         } else {
           setSelectedAmenities(newSelected)
         }
       } else {
-        setSelectedAmenities(selectedAmenities.filter(a => a !== amenity && a !== "Tất cả"))
+        setSelectedAmenities(selectedAmenities.filter(a => a !== amenity))
       }
     }
   }
@@ -194,70 +194,24 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
     if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
     if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
 
-    // Legal status - join as comma-separated string
+    // Legal status - send exact Vietnamese strings joined by comma
     if (selectedLegalStatus.length > 0) {
-      const statusMap: { [key: string]: string } = {
-        "Sổ hồng riêng": "own_certificate",
-        "Đang chờ sổ": "pending",
-        "Sổ chung": "shared",
-        "Không rõ": "unknown"
-      }
-      const mappedStatuses = selectedLegalStatus.map(s => statusMap[s]).filter(Boolean)
-      if (mappedStatuses.length > 0) {
-        filters.legal_status = mappedStatuses.join(",")
-      }
+      filters.legal_status = selectedLegalStatus.join(",")
     }
 
-    // Furniture - join as comma-separated string
+    // Furniture - send exact Vietnamese strings joined by comma
     if (selectedFurniture.length > 0) {
-      const furnitureMap: { [key: string]: string } = {
-        "Cơ bản": "basic",
-        "Đầy đủ": "full",
-        "Cao cấp": "luxury",
-        "Không nội thất": "none"
-      }
-      const mappedFurniture = selectedFurniture.map(f => furnitureMap[f]).filter(Boolean)
-      if (mappedFurniture.length > 0) {
-        filters.furniture = mappedFurniture.join(",")
-      }
+      filters.furniture = selectedFurniture.join(",")
     }
 
-    // House direction - join as comma-separated string
+    // House direction - send exact Vietnamese strings joined by comma
     if (selectedHouseDirection.length > 0) {
-      const directionMap: { [key: string]: string } = {
-        "Tây - Nam": "southwest",
-        "Đông - Nam": "southeast",
-        "Bắc": "north",
-        "Nam": "south",
-        "Đông - Bắc": "northeast",
-        "Tây - Bắc": "northwest",
-        "Tây": "west",
-        "Đông": "east",
-        "Không rõ": "unknown"
-      }
-      const mappedDirections = selectedHouseDirection.map(d => directionMap[d]).filter(Boolean)
-      if (mappedDirections.length > 0) {
-        filters.house_direction = mappedDirections.join(",")
-      }
+      filters.house_direction = selectedHouseDirection.join(",")
     }
 
-    // Balcony direction - join as comma-separated string
+    // Balcony direction - send exact Vietnamese strings joined by comma
     if (selectedBalconyDirection.length > 0) {
-      const directionMap: { [key: string]: string } = {
-        "Tây - Nam": "southwest",
-        "Đông - Nam": "southeast",
-        "Bắc": "north",
-        "Nam": "south",
-        "Đông - Bắc": "northeast",
-        "Tây - Bắc": "northwest",
-        "Tây": "west",
-        "Đông": "east",
-        "Không rõ": "unknown"
-      }
-      const mappedDirections = selectedBalconyDirection.map(d => directionMap[d]).filter(Boolean)
-      if (mappedDirections.length > 0) {
-        filters.balcony_direction = mappedDirections.join(",")
-      }
+      filters.balcony_direction = selectedBalconyDirection.join(",")
     }
 
     // Amenities
@@ -271,6 +225,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       })
     }
 
+    console.log("[v0] Filters payload:", filters)
     onApplyFilters(filters)
   }
 
@@ -403,7 +358,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
-        {/* Pháp lý - Checkbox group with Select All */}
+        {/* Pháp lý */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Pháp lý
@@ -430,7 +385,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
-        {/* Nội thất - Checkbox group with Select All */}
+        {/* Nội thất */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Nội thất
@@ -457,7 +412,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
-        {/* Hướng nhà - Checkbox group with Select All */}
+        {/* Hướng nhà */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Hướng nhà
@@ -484,7 +439,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
-        {/* Hướng ban công - Checkbox group with Select All */}
+        {/* Hướng ban công */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Hướng ban công
@@ -523,7 +478,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
                 className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
               >
                 <Checkbox 
-                  checked={selectedAmenities.includes(amenity)}
+                  checked={amenity === "Tất cả" ? selectedAmenities.length === AMENITIES.length - 1 : selectedAmenities.includes(amenity)}
                   onCheckedChange={(checked) => handleAmenityChange(amenity, checked as boolean)}
                 />
                 <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
@@ -533,6 +488,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
         </div>
       </div>
 
+      {/* Sticky Button at Bottom */}
       <div className="border-t border-border bg-white p-4">
         <Button 
           onClick={handleApplyFilters}
