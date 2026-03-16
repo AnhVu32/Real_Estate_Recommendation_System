@@ -47,6 +47,14 @@ const AMENITIES = [
   "View công viên", "View thành phố", "Ban công", "Vườn", "Garage", "Sân thượng"
 ]
 
+const LEGAL_STATUS_OPTIONS = [
+  "Tất cả", "Sổ hồng riêng", "Đang chờ sổ", "Sổ chung", "Không rõ"
+]
+
+const FURNITURE_OPTIONS = [
+  "Tất cả", "Cơ bản", "Đầy đủ", "Cao cấp", "Không nội thất"
+]
+
 const DIRECTIONS = [
   "Tất cả", "Tây - Nam", "Đông - Nam", "Bắc", "Nam", "Đông - Bắc", "Tây - Bắc", "Tây", "Đông", "Không rõ"
 ]
@@ -93,10 +101,13 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   const [selectedBedrooms, setSelectedBedrooms] = useState("")
   const [selectedBathrooms, setSelectedBathrooms] = useState("")
   const [propertyType, setPropertyType] = useState("all")
-  const [legalStatus, setLegalStatus] = useState("all")
-  const [furniture, setFurniture] = useState("all")
-  const [houseDirection, setHouseDirection] = useState("all")
-  const [balconyDirection, setBalconyDirection] = useState("all")
+  
+  // Array states for 4 checkbox groups with true Select All behavior
+  const [selectedLegalStatus, setSelectedLegalStatus] = useState<string[]>([])
+  const [selectedFurniture, setSelectedFurniture] = useState<string[]>([])
+  const [selectedHouseDirection, setSelectedHouseDirection] = useState<string[]>([])
+  const [selectedBalconyDirection, setSelectedBalconyDirection] = useState<string[]>([])
+  
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
 
   const filteredWards = useMemo(() => {
@@ -108,32 +119,57 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
 
   const handleWardChange = (ward: string, checked: boolean) => {
     if (ward === "Tất cả") {
-      if (checked) {
-        setSelectedWards(WARDS)
-      } else {
-        setSelectedWards([])
-      }
+      setSelectedWards(checked ? WARDS : [])
     } else {
+      let newSelected: string[]
       if (checked) {
-        const newSelected = [...selectedWards, ward]
+        newSelected = [...selectedWards, ward]
         if (newSelected.length === WARDS.length - 1) {
-          setSelectedWards(WARDS)
-        } else {
-          setSelectedWards(newSelected)
+          newSelected = WARDS
         }
       } else {
-        setSelectedWards(selectedWards.filter(w => w !== ward && w !== "Tất cả"))
+        newSelected = selectedWards.filter(w => w !== ward && w !== "Tất cả")
       }
+      setSelectedWards(newSelected)
     }
+  }
+
+  const handleCheckboxGroupChange = (
+    item: string,
+    checked: boolean,
+    allOptions: string[],
+    currentSelected: string[],
+    setSelected: (items: string[]) => void
+  ) => {
+    const otherOptions = allOptions.filter(o => o !== "Tất cả")
+    
+    if (item === "Tất cả") {
+      setSelected(checked ? otherOptions : [])
+    } else {
+      let newSelected: string[]
+      if (checked) {
+        newSelected = [...currentSelected, item]
+      } else {
+        newSelected = currentSelected.filter(i => i !== item)
+      }
+      
+      // Auto-check "Tất cả" if all individual items are selected
+      if (newSelected.length === otherOptions.length) {
+        newSelected = otherOptions
+      }
+      
+      setSelected(newSelected)
+    }
+  }
+
+  const isAllChecked = (selected: string[], allOptions: string[]) => {
+    const otherOptions = allOptions.filter(o => o !== "Tất cả")
+    return selected.length === otherOptions.length
   }
 
   const handleAmenityChange = (amenity: string, checked: boolean) => {
     if (amenity === "Tất cả") {
-      if (checked) {
-        setSelectedAmenities(AMENITIES)
-      } else {
-        setSelectedAmenities([])
-      }
+      setSelectedAmenities(checked ? AMENITIES : [])
     } else {
       if (checked) {
         const newSelected = [...selectedAmenities, amenity]
@@ -158,29 +194,73 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
     if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
     if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
 
-    if (legalStatus !== "all") {
+    // Legal status - join as comma-separated string
+    if (selectedLegalStatus.length > 0) {
       const statusMap: { [key: string]: string } = {
-        "so-hong-rieng": "own_certificate",
-        "dang-cho-so": "pending",
-        "so-chung": "shared",
-        "khong-ro": "unknown"
+        "Sổ hồng riêng": "own_certificate",
+        "Đang chờ sổ": "pending",
+        "Sổ chung": "shared",
+        "Không rõ": "unknown"
       }
-      filters.legal_status = statusMap[legalStatus]
+      const mappedStatuses = selectedLegalStatus.map(s => statusMap[s]).filter(Boolean)
+      if (mappedStatuses.length > 0) {
+        filters.legal_status = mappedStatuses.join(",")
+      }
     }
 
-    if (furniture !== "all") {
+    // Furniture - join as comma-separated string
+    if (selectedFurniture.length > 0) {
       const furnitureMap: { [key: string]: string } = {
-        "co-ban": "basic",
-        "day-du": "full",
-        "cao-cap": "luxury",
-        "khong-noi-that": "none"
+        "Cơ bản": "basic",
+        "Đầy đủ": "full",
+        "Cao cấp": "luxury",
+        "Không nội thất": "none"
       }
-      filters.furniture = furnitureMap[furniture]
+      const mappedFurniture = selectedFurniture.map(f => furnitureMap[f]).filter(Boolean)
+      if (mappedFurniture.length > 0) {
+        filters.furniture = mappedFurniture.join(",")
+      }
     }
 
-    if (houseDirection !== "all") filters.house_direction = houseDirection
-    if (balconyDirection !== "all") filters.balcony_direction = balconyDirection
+    // House direction - join as comma-separated string
+    if (selectedHouseDirection.length > 0) {
+      const directionMap: { [key: string]: string } = {
+        "Tây - Nam": "southwest",
+        "Đông - Nam": "southeast",
+        "Bắc": "north",
+        "Nam": "south",
+        "Đông - Bắc": "northeast",
+        "Tây - Bắc": "northwest",
+        "Tây": "west",
+        "Đông": "east",
+        "Không rõ": "unknown"
+      }
+      const mappedDirections = selectedHouseDirection.map(d => directionMap[d]).filter(Boolean)
+      if (mappedDirections.length > 0) {
+        filters.house_direction = mappedDirections.join(",")
+      }
+    }
 
+    // Balcony direction - join as comma-separated string
+    if (selectedBalconyDirection.length > 0) {
+      const directionMap: { [key: string]: string } = {
+        "Tây - Nam": "southwest",
+        "Đông - Nam": "southeast",
+        "Bắc": "north",
+        "Nam": "south",
+        "Đông - Bắc": "northeast",
+        "Tây - Bắc": "northwest",
+        "Tây": "west",
+        "Đông": "east",
+        "Không rõ": "unknown"
+      }
+      const mappedDirections = selectedBalconyDirection.map(d => directionMap[d]).filter(Boolean)
+      if (mappedDirections.length > 0) {
+        filters.balcony_direction = mappedDirections.join(",")
+      }
+    }
+
+    // Amenities
     const amenitiesWithoutAll = selectedAmenities.filter(a => a !== "Tất cả")
     if (amenitiesWithoutAll.length > 0) {
       amenitiesWithoutAll.forEach(amenity => {
@@ -202,6 +282,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* Vị trí */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Vị trí
@@ -231,6 +312,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
+        {/* Loại BĐS */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Loại BĐS
@@ -247,6 +329,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </Select>
         </div>
 
+        {/* Khoảng giá */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Khoảng giá (VNĐ)
@@ -269,6 +352,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
+        {/* Diện tích */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Diện tích (m²)
@@ -291,6 +375,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
+        {/* Số phòng ngủ & phòng tắm */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
@@ -318,80 +403,115 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-              Pháp lý
-            </label>
-            <Select value={legalStatus} onValueChange={setLegalStatus}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="so-hong-rieng">Sổ hồng riêng</SelectItem>
-                <SelectItem value="dang-cho-so">Đang chờ sổ</SelectItem>
-                <SelectItem value="so-chung">Sổ chung</SelectItem>
-                <SelectItem value="khong-ro">Không rõ</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-              Nội thất
-            </label>
-            <Select value={furniture} onValueChange={setFurniture}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="co-ban">Cơ bản</SelectItem>
-                <SelectItem value="day-du">Đầy đủ</SelectItem>
-                <SelectItem value="cao-cap">Cao cấp</SelectItem>
-                <SelectItem value="khong-noi-that">Không nội thất</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Pháp lý - Checkbox group with Select All */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Pháp lý
+          </label>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-40 overflow-y-auto">
+            {LEGAL_STATUS_OPTIONS.map((option) => (
+              <label 
+                key={option} 
+                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={option === "Tất cả" ? isAllChecked(selectedLegalStatus, LEGAL_STATUS_OPTIONS) : selectedLegalStatus.includes(option)}
+                  onCheckedChange={(checked) => handleCheckboxGroupChange(
+                    option,
+                    checked as boolean,
+                    LEGAL_STATUS_OPTIONS,
+                    selectedLegalStatus,
+                    setSelectedLegalStatus
+                  )}
+                />
+                <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
+              </label>
+            ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-              Hướng nhà
-            </label>
-            <Select value={houseDirection} onValueChange={setHouseDirection}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                {DIRECTIONS.map((direction) => (
-                  <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
-                    {direction}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
-              Hướng ban công
-            </label>
-            <Select value={balconyDirection} onValueChange={setBalconyDirection}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                {DIRECTIONS.map((direction) => (
-                  <SelectItem key={direction} value={direction.toLowerCase().replace(/\s/g, "-")}>
-                    {direction}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Nội thất - Checkbox group with Select All */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Nội thất
+          </label>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-40 overflow-y-auto">
+            {FURNITURE_OPTIONS.map((option) => (
+              <label 
+                key={option} 
+                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={option === "Tất cả" ? isAllChecked(selectedFurniture, FURNITURE_OPTIONS) : selectedFurniture.includes(option)}
+                  onCheckedChange={(checked) => handleCheckboxGroupChange(
+                    option,
+                    checked as boolean,
+                    FURNITURE_OPTIONS,
+                    selectedFurniture,
+                    setSelectedFurniture
+                  )}
+                />
+                <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
+              </label>
+            ))}
           </div>
         </div>
 
+        {/* Hướng nhà - Checkbox group with Select All */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Hướng nhà
+          </label>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-40 overflow-y-auto">
+            {DIRECTIONS.map((option) => (
+              <label 
+                key={option} 
+                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={option === "Tất cả" ? isAllChecked(selectedHouseDirection, DIRECTIONS) : selectedHouseDirection.includes(option)}
+                  onCheckedChange={(checked) => handleCheckboxGroupChange(
+                    option,
+                    checked as boolean,
+                    DIRECTIONS,
+                    selectedHouseDirection,
+                    setSelectedHouseDirection
+                  )}
+                />
+                <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Hướng ban công - Checkbox group with Select All */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+            Hướng ban công
+          </label>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-40 overflow-y-auto">
+            {DIRECTIONS.map((option) => (
+              <label 
+                key={option} 
+                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+              >
+                <Checkbox 
+                  checked={option === "Tất cả" ? isAllChecked(selectedBalconyDirection, DIRECTIONS) : selectedBalconyDirection.includes(option)}
+                  onCheckedChange={(checked) => handleCheckboxGroupChange(
+                    option,
+                    checked as boolean,
+                    DIRECTIONS,
+                    selectedBalconyDirection,
+                    setSelectedBalconyDirection
+                  )}
+                />
+                <span className={option === "Tất cả" ? "font-medium" : ""}>{option}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Tiện ích */}
         <div>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
             Tiện ích
