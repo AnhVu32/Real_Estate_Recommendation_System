@@ -74,11 +74,14 @@ export function PropertyListings() {
         console.log("[v0] API Response for page", currentPage, ":", data)
         
         const fetchedProperties = data.data?.properties || []
+        // Extract total count from data.total (the global total, not per-page)
+        const total = data.data?.total || data.total || fetchedProperties.length
+        
         setProperties(fetchedProperties)
-        setTotalCount(data.data?.total_count || fetchedProperties.length)
+        setTotalCount(total)
         setTotalPages(data.data?.num_pages || 1)
         
-        console.log("[v0] Loaded", fetchedProperties.length, "properties for page", currentPage)
+        console.log("[v0] Loaded", fetchedProperties.length, "properties for page", currentPage, "Total:", total)
         
         // Scroll to top smoothly
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -141,10 +144,10 @@ export function PropertyListings() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-foreground">
-            Mua bán nhà đất trên toàn quốc
+            Mua bán Bất động sản ở Thành phố Hồ Chí Minh
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Hiển thị {totalCount} bất động sản đã xác thực
+            Hiển thị {totalCount.toLocaleString('vi-VN')} bất động sản đã xác thực
           </p>
         </div>
 
