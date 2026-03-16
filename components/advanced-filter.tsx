@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search } from "lucide-react"
+import { Search, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -206,7 +207,15 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <Card className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col">
+      {/* Header with Filter Icon */}
+      <div className="border-b border-border bg-background p-4 flex items-center gap-2">
+        <SlidersHorizontal className="h-5 w-5 text-[#E03C31]" />
+        <h2 className="font-semibold text-foreground">Bộ lọc chi tiết</h2>
+      </div>
+
+      {/* Scrollable Filter Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
       {/* 1. VỊ TRÍ - Checkbox list with search */}
       <div>
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
@@ -425,13 +434,15 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
         </div>
       </div>
 
-      {/* Apply Filter Button */}
-      <Button 
-        onClick={handleApplyFilters}
-        className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-12 text-base font-medium"
-      >
-        Áp dụng bộ lọc
-      </Button>
-    </div>
+      {/* Sticky Button at Bottom */}
+      <div className="sticky bottom-0 border-t border-border bg-white p-4">
+        <Button 
+          onClick={handleApplyFilters}
+          className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-12 text-base font-medium"
+        >
+          Áp dụng bộ lọc
+        </Button>
+      </div>
+    </Card>
   )
 }

@@ -27,8 +27,8 @@ export default function RealEstatePage() {
       
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Fixed 1/4 width */}
-          <aside className="lg:col-span-1">
+          {/* Left Sidebar - Sticky with independent scrolling */}
+          <aside className="lg:col-span-1 sticky top-24 h-[calc(100vh-7rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden">
             <SidebarFilter onApplyFilters={handleApplyFilters} />
           </aside>
           
