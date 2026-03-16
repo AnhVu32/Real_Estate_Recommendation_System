@@ -1,6 +1,6 @@
 import { Header } from "@/components/header"
 import { SearchBar } from "@/components/search-bar"
-import { FilterSidebar } from "@/components/filter-sidebar"
+import { SidebarFilter } from "@/components/SidebarFilter"
 import { PropertyListings } from "@/components/property-listings"
 import { Footer } from "@/components/footer"
 
@@ -16,7 +16,7 @@ export default function RealEstatePage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Fixed 1/4 width */}
           <aside className="lg:col-span-1">
-            <FilterSidebar />
+            <SidebarFilter />
           </aside>
           
           {/* Right Main Column - 3/4 width */}

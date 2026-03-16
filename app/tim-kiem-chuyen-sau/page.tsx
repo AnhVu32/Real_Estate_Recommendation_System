@@ -1,5 +1,5 @@
 import { Header } from "@/components/header"
-import { AdvancedFilter } from "@/components/advanced-filter"
+import { SidebarFilter } from "@/components/SidebarFilter"
 import { AIChat } from "@/components/ai-chat"
 
 export default function AdvancedSearchPage() {
@@ -14,7 +14,7 @@ export default function AdvancedSearchPage() {
       <main className="flex-1 min-h-0 grid grid-cols-12 overflow-hidden">
         {/* Left Column - Complex Filter (col-span-5) */}
         <aside className="col-span-12 lg:col-span-5 h-full min-h-0 overflow-y-auto border-r border-border p-6">
-          <AdvancedFilter />
+          <SidebarFilter showSupportCard={false} />
         </aside>
         
         {/* Right Column - AI Chat (col-span-7) */}
