@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, Bot, User, Loader2 } from "lucide-react"
+import { Send, Bot, User, Loader2, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PropertyCard } from "@/components/property-card"
@@ -196,7 +196,34 @@ export function AIChat() {
               {message.properties && message.properties.length > 0 && (
                 <div className="mt-3 space-y-3 pr-2">
                   {message.properties.slice(0, 3).map((property) => (
-                    <PropertyCard key={property.id} property={property} />
+                    <div key={property.id} className="flex flex-col gap-3 mb-6">
+                      {/* Property Card */}
+                      <PropertyCard property={property} />
+                      
+                      {/* AI Insights Box */}
+                      {(property.explanation || property.comparison) && (
+                        <div className="bg-muted/50 rounded-lg p-4 text-sm text-foreground border border-border">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Sparkles className="w-4 h-4 text-[#E03C31]" />
+                            <span className="font-semibold">AI Insights</span>
+                          </div>
+                          
+                          {property.explanation && (
+                            <div className="mb-3">
+                              <span className="font-semibold">💡 Lý do đề xuất:</span>
+                              <p className="mt-1 text-muted-foreground">{property.explanation}</p>
+                            </div>
+                          )}
+                          
+                          {property.comparison && (
+                            <div>
+                              <span className="font-semibold">⚖️ Đánh giá:</span>
+                              <p className="mt-1 text-muted-foreground">{property.comparison}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
