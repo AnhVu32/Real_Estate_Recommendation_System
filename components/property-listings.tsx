@@ -112,7 +112,7 @@ export function PropertyListings({
         const queryString = buildQueryParams()
         console.log("[v0] Fetching with query:", queryString)
         
-        const response = await fetch(`http://34.87.56.13:1605/v1/properties?${queryString}`)
+        const response = await fetch(`/api/properties?${queryString}`)
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`)
