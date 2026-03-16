@@ -103,35 +103,35 @@ interface SidebarFilterProps {
 
 export function SidebarFilter({ 
   showSupportCard = true,
-  searchQuery,
-  onSearchQueryChange,
-  minPrice,
-  maxPrice,
-  onMinPriceChange,
-  onMaxPriceChange,
-  minArea,
-  maxArea,
-  onMinAreaChange,
-  onMaxAreaChange,
-  bedrooms,
-  bathrooms,
-  onBedroomsChange,
-  onBathroomsChange,
-  propertyType,
-  onPropertyTypeChange,
-  selectedWards,
-  onWardsChange,
-  selectedLegal,
-  onLegalChange,
-  selectedFurniture,
-  onFurnitureChange,
-  selectedDirection,
-  onDirectionChange,
-  selectedBalconyDirection,
-  onBalconyDirectionChange,
-  selectedAmenities,
-  onAmenitiesChange,
-  onSearch,
+  searchQuery = "",
+  onSearchQueryChange = () => {},
+  minPrice = "",
+  maxPrice = "",
+  onMinPriceChange = () => {},
+  onMaxPriceChange = () => {},
+  minArea = "",
+  maxArea = "",
+  onMinAreaChange = () => {},
+  onMaxAreaChange = () => {},
+  bedrooms = "",
+  bathrooms = "",
+  onBedroomsChange = () => {},
+  onBathroomsChange = () => {},
+  propertyType = "all",
+  onPropertyTypeChange = () => {},
+  selectedWards = WARDS,
+  onWardsChange = () => {},
+  selectedLegal = LEGAL_OPTIONS,
+  onLegalChange = () => {},
+  selectedFurniture = FURNITURE_OPTIONS,
+  onFurnitureChange = () => {},
+  selectedDirection = DIRECTIONS,
+  onDirectionChange = () => {},
+  selectedBalconyDirection = DIRECTIONS,
+  onBalconyDirectionChange = () => {},
+  selectedAmenities = AMENITIES,
+  onAmenitiesChange = () => {},
+  onSearch = () => {},
   isLoading = false,
 }: SidebarFilterProps) {
   const [wardSearch, setWardSearch] = useState("")
@@ -427,7 +427,23 @@ export function SidebarFilter({
 
         {/* Non-accordion sections - Always visible */}
         <div className="space-y-5 mt-6">
-          {/* 2. LOẠI BĐS - Property Type Select */}
+          {/* 0. TÌM KIẾM - Search Query Input */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+              Tìm kiếm
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Nhập từ khóa tìm kiếm..." 
+                className="h-10 pl-9" 
+                value={searchQuery}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* 1. LOẠI BĐS - Property Type Select */}
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
               Loại bđs
