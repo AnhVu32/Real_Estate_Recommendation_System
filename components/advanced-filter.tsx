@@ -435,7 +435,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       </div>
 
       {/* Sticky Button at Bottom */}
-      <div className="sticky bottom-0 border-t border-border bg-white p-4">
+      <div className="border-t border-border bg-white p-4">
         <Button 
           onClick={handleApplyFilters}
           className="w-full bg-[#E03C31] hover:bg-[#c43428] text-white h-12 text-base font-medium"
