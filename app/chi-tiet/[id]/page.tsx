@@ -80,7 +80,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     const fetchProperty = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://34.87.56.13:1605/v1/properties/${resolvedParams.id}`)
+        const response = await fetch(`/api/properties/${resolvedParams.id}`)
 
         if (!response.ok) {
           if (response.status === 404) {
