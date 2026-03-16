@@ -144,7 +144,9 @@ export default function AdvancedSearchPage() {
       const data = await response.json()
       console.log("[v0] Search results:", data)
       
-      setSearchResults(data.results || data || [])
+      // Handle both API response formats
+      const results = Array.isArray(data) ? data : (data.results || [])
+      setSearchResults(results)
       setHasSearched(true)
     } catch (err) {
       console.error('Error searching:', err)
