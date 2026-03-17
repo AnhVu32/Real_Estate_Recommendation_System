@@ -5,10 +5,11 @@ import { AdvancedFilter } from "@/components/advanced-filter"
 
 interface SidebarFilterProps {
   onApplyFilters?: (filters: any) => void
+  onFilterChange?: (draftFilters: any) => void
   showSupportCard?: boolean
 }
 
-export function SidebarFilter({ onApplyFilters, showSupportCard = true }: SidebarFilterProps) {
+export function SidebarFilter({ onApplyFilters, onFilterChange, showSupportCard = true }: SidebarFilterProps) {
   const handleApplyFilters = (filters: any) => {
     console.log("[v0] SidebarFilter received filters:", filters)
     onApplyFilters?.(filters)
@@ -17,7 +18,10 @@ export function SidebarFilter({ onApplyFilters, showSupportCard = true }: Sideba
   return (
     <div className="space-y-6 sticky top-24">
       {/* Filter Form - Rendered directly in sidebar */}
-      <AdvancedFilter onApplyFilters={handleApplyFilters} />
+      <AdvancedFilter 
+        onApplyFilters={handleApplyFilters}
+        onFilterChange={onFilterChange}
+      />
 
       {/* Support CTA Card - Conditional rendering */}
       {showSupportCard && (
