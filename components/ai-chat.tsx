@@ -18,11 +18,16 @@ interface AISearchPayload {
   [key: string]: any
 }
 
-export function AIChat() {
+interface AIChatProps {
+  filters?: any
+}
+
+export function AIChat({ filters: propFilters = {} }: AIChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [filters, setFilters] = useState<any>({})
+  // Use propFilters directly instead of managing local state
+  const currentFilters = propFilters
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Initialize with welcome message
@@ -68,47 +73,48 @@ export function AIChat() {
 
     try {
       // Create a formatted payload specifically for the AI backend
+      // Use strict fallbacks to ensure max_price and max_area are never undefined
       const apiPayload = {
         question: userQuestion,
-        min_price: filters.min_price || 0,
-        max_price: filters.max_price === 0 ? 999999 : filters.max_price,
-        min_area: filters.min_area || 0,
-        max_area: filters.max_area === 0 ? 999999 : filters.max_area,
-        bedrooms: filters.bedrooms || 0,
-        bathrooms: filters.bathrooms || 0,
-        legal_status: filters.legal_status || "",
-        furniture: filters.furniture || "",
-        house_direction: filters.house_direction || "",
-        balcony_direction: filters.balcony_direction || "",
-        district: filters.district || "",
-        property_type: filters.property_type || "",
+        min_price: currentFilters.min_price || 0,
+        max_price: (currentFilters.max_price === 0 || !currentFilters.max_price) ? 999999 : currentFilters.max_price,
+        min_area: currentFilters.min_area || 0,
+        max_area: (currentFilters.max_area === 0 || !currentFilters.max_area) ? 999999 : currentFilters.max_area,
+        bedrooms: currentFilters.bedrooms || 0,
+        bathrooms: currentFilters.bathrooms || 0,
+        legal_status: currentFilters.legal_status || "",
+        furniture: currentFilters.furniture || "",
+        house_direction: currentFilters.house_direction || "",
+        balcony_direction: currentFilters.balcony_direction || "",
+        district: currentFilters.district || "",
+        property_type: currentFilters.property_type || "",
         length_road_entrance: 0,
         // Force all boolean fields to be true/false, NOT 1/0
-        pool: !!filters.pool,
-        gym: !!filters.gym,
-        park: !!filters.park,
-        bbq: !!filters.bbq,
-        kids_playground: !!filters.kids_playground,
-        sports_court: !!filters.sports_court,
-        security_24h: !!filters.security_24h,
-        reception: !!filters.reception,
-        elevator: !!filters.elevator,
-        parking: !!filters.parking,
-        near_metro: !!filters.near_metro,
-        near_bus: !!filters.near_bus,
-        near_highway: !!filters.near_highway,
-        near_school: !!filters.near_school,
-        near_hospital: !!filters.near_hospital,
-        near_mall: !!filters.near_mall,
-        near_market: !!filters.near_market,
-        near_park: !!filters.near_park,
-        river_view: !!filters.river_view,
-        park_view: !!filters.park_view,
-        city_view: !!filters.city_view,
-        balcony: !!filters.balcony,
-        garden: !!filters.garden,
-        garage: !!filters.garage,
-        terrace: !!filters.terrace,
+        pool: !!currentFilters.pool,
+        gym: !!currentFilters.gym,
+        park: !!currentFilters.park,
+        bbq: !!currentFilters.bbq,
+        kids_playground: !!currentFilters.kids_playground,
+        sports_court: !!currentFilters.sports_court,
+        security_24h: !!currentFilters.security_24h,
+        reception: !!currentFilters.reception,
+        elevator: !!currentFilters.elevator,
+        parking: !!currentFilters.parking,
+        near_metro: !!currentFilters.near_metro,
+        near_bus: !!currentFilters.near_bus,
+        near_highway: !!currentFilters.near_highway,
+        near_school: !!currentFilters.near_school,
+        near_hospital: !!currentFilters.near_hospital,
+        near_mall: !!currentFilters.near_mall,
+        near_market: !!currentFilters.near_market,
+        near_park: !!currentFilters.near_park,
+        river_view: !!currentFilters.river_view,
+        park_view: !!currentFilters.park_view,
+        city_view: !!currentFilters.city_view,
+        balcony: !!currentFilters.balcony,
+        garden: !!currentFilters.garden,
+        garage: !!currentFilters.garage,
+        terrace: !!currentFilters.terrace,
       }
 
       console.log("[v0] AI Search payload:", apiPayload)
