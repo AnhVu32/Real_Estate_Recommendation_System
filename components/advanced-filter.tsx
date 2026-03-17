@@ -67,6 +67,13 @@ const AMENITY_MAPPING: { [key: string]: string } = {
   "Sân thượng": "terrace"
 }
 
+const LEGAL_STATUS_MAPPING: { [key: string]: string } = {
+  "Sổ hồng riêng": "own_certificate",
+  "Đang chờ sổ": "pending_certificate",
+  "Sổ chung": "shared_certificate",
+  "Không rõ": "unknown"
+}
+
 interface AdvancedFilterProps {
   onApplyFilters: (filters: any) => void
 }
@@ -180,9 +187,14 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
     if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
     if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
 
-    // Legal status - send exact Vietnamese strings joined by comma
+    // Legal status - convert to backend slugs and join with comma
     if (selectedLegalStatus.length > 0) {
-      filters.legal_status = selectedLegalStatus.join(",")
+      const mappedStatuses = selectedLegalStatus.map(status => LEGAL_STATUS_MAPPING[status]).filter(Boolean)
+      if (mappedStatuses.length > 0) {
+        console.log("[v0] Selected legal status items:", selectedLegalStatus)
+        console.log("[v0] Mapped to backend:", mappedStatuses)
+        filters.legal_status = mappedStatuses.join(",")
+      }
     }
 
     // Furniture - send exact Vietnamese strings joined by comma
