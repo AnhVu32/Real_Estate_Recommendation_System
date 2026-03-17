@@ -148,19 +148,25 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   }
 
   const handleAmenityChange = (amenity: string, checked: boolean) => {
+    const otherAmenities = AMENITIES.filter(a => a !== "Tất cả")
+    
     if (amenity === "Tất cả") {
-      setSelectedAmenities(checked ? AMENITIES.filter(a => a !== "Tất cả") : [])
+      // Checking "Tất cả" selects all amenities (without "Tất cả" itself)
+      setSelectedAmenities(checked ? otherAmenities : [])
     } else {
+      let newSelected: string[]
       if (checked) {
-        const newSelected = [...selectedAmenities, amenity]
-        if (newSelected.length === AMENITIES.length - 1) {
-          setSelectedAmenities(AMENITIES.filter(a => a !== "Tất cả"))
-        } else {
-          setSelectedAmenities(newSelected)
-        }
+        newSelected = [...selectedAmenities, amenity]
       } else {
-        setSelectedAmenities(selectedAmenities.filter(a => a !== amenity))
+        newSelected = selectedAmenities.filter(a => a !== amenity)
       }
+      
+      // Auto-select all when all individual amenities are selected
+      if (newSelected.length === otherAmenities.length) {
+        newSelected = otherAmenities
+      }
+      
+      setSelectedAmenities(newSelected)
     }
   }
 
@@ -203,10 +209,13 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
       filters.balcony_direction = selectedBalconyDirection.join(",")
     }
 
-    // Amenities
-    const amenitiesWithoutAll = selectedAmenities.filter(a => a !== "Tất cả")
-    if (amenitiesWithoutAll.length > 0) {
-      amenitiesWithoutAll.forEach(amenity => {
+    // Amenities - ONLY include boolean flags if user selected specific amenities (not all)
+    const otherAmenities = AMENITIES.filter(a => a !== "Tất cả")
+    const hasAllAmenities = selectedAmenities.length === otherAmenities.length
+    
+    // Only add amenity filters if specific amenities are selected (not all)
+    if (selectedAmenities.length > 0 && !hasAllAmenities) {
+      selectedAmenities.forEach(amenity => {
         const apiParam = AMENITY_MAPPING[amenity]
         if (apiParam) {
           filters[apiParam] = true
@@ -461,18 +470,24 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
             Tiện ích
           </label>
           <div className="grid grid-cols-2 gap-x-3 gap-y-1 border border-border rounded-md p-3 max-h-48 overflow-y-auto">
-            {AMENITIES.map((amenity) => (
-              <label 
-                key={amenity} 
-                className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
-              >
-                <Checkbox 
-                  checked={amenity === "Tất cả" ? selectedAmenities.length === AMENITIES.length - 1 : selectedAmenities.includes(amenity)}
-                  onCheckedChange={(checked) => handleAmenityChange(amenity, checked as boolean)}
-                />
-                <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
-              </label>
-            ))}
+            {AMENITIES.map((amenity) => {
+              const otherAmenities = AMENITIES.filter(a => a !== "Tất cả")
+              const isAllAmenitiesSelected = selectedAmenities.length === otherAmenities.length
+              const isChecked = amenity === "Tất cả" ? isAllAmenitiesSelected : selectedAmenities.includes(amenity)
+              
+              return (
+                <label 
+                  key={amenity} 
+                  className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded cursor-pointer text-sm"
+                >
+                  <Checkbox 
+                    checked={isChecked}
+                    onCheckedChange={(checked) => handleAmenityChange(amenity, checked as boolean)}
+                  />
+                  <span className={amenity === "Tất cả" ? "font-medium" : ""}>{amenity}</span>
+                </label>
+              )
+            })}
           </div>
         </div>
       </div>
