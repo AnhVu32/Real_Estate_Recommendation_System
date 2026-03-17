@@ -100,7 +100,8 @@ export function PropertyListings({
       }
     })
 
-    return searchParams.toString()
+    // Fix URL encoding: replace + with %20 for proper space encoding
+    return searchParams.toString().replace(/\+/g, '%20')
   }
 
   useEffect(() => {
