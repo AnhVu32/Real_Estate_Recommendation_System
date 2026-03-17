@@ -1,10 +1,30 @@
 "use client"
 
 import { Search, Map } from "lucide-react"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-export function SearchBar() {
+interface SearchBarProps {
+  onSearch?: (query: string) => void
+}
+
+export function SearchBar({ onSearch }: SearchBarProps) {
+  const [searchInput, setSearchInput] = useState("")
+
+  const handleSearch = () => {
+    if (searchInput.trim()) {
+      onSearch?.(searchInput)
+      setSearchInput("")
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch()
+    }
+  }
+
   return (
     <div className="border-b border-border bg-background py-4">
       <div className="container mx-auto px-4">
@@ -14,10 +34,17 @@ export function SearchBar() {
             <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Chung cư Vinhomes 2 ngủ"
-              className="pl-12 pr-4 py-3 h-12 w-full border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Tìm kiếm từ khoá dựa trên tiêu đề, mô tả,..."
+              className="pl-12 pr-28 py-3 h-12 w-full border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              suppressHydrationWarning
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
-            <Button className="absolute right-2 bg-[#E03C31] hover:bg-[#c43428] text-white h-9 px-5 rounded-md">
+            <Button 
+              className="absolute right-2 bg-[#E03C31] hover:bg-[#c43428] text-white h-9 px-5 rounded-md"
+              onClick={handleSearch}
+            >
               Tìm kiếm
             </Button>
           </div>

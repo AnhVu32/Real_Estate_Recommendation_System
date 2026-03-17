@@ -18,11 +18,21 @@ export default function RealEstatePage() {
     setCurrentPage(1) // Reset to first page when filters change
   }, [])
 
+  const handleSearch = useCallback((query: string) => {
+    console.log("[v0] Search query:", query)
+    // Add the search query to active filters
+    setActiveFilters(prev => ({
+      ...prev,
+      query: query
+    }))
+    setCurrentPage(1) // Reset to first page when search query changes
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 w-full bg-background shadow-sm">
         <Header />
-        <SearchBar />
+        <SearchBar onSearch={handleSearch} />
       </header>
       
       <main className="flex-1 container mx-auto px-4 py-6">
