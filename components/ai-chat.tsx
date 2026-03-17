@@ -65,43 +65,54 @@ export function AIChat() {
 
     try {
       // Build payload with question and filters
+      // Apply transformations and format strictly for the AI Search API
       const payload: AISearchPayload = {
         question: inputValue,
+        // Max values: use 999999 if 0
         min_price: filters.min_price || 0,
-        max_price: filters.max_price || 0,
+        max_price: filters.max_price === 0 ? 999999 : (filters.max_price || 0),
         min_area: filters.min_area || 0,
-        max_area: filters.max_area || 0,
+        max_area: filters.max_area === 0 ? 999999 : (filters.max_area || 0),
         bedrooms: filters.bedrooms || 0,
         bathrooms: filters.bathrooms || 0,
         legal_status: filters.legal_status || "",
         furniture: filters.furniture || "",
         house_direction: filters.house_direction || "",
         balcony_direction: filters.balcony_direction || "",
-        pool: filters.pool ? 1 : 0,
-        gym: filters.gym ? 1 : 0,
-        park: filters.park ? 1 : 0,
-        bbq: filters.bbq ? 1 : 0,
-        kids_playground: filters.kids_playground ? 1 : 0,
-        sports_court: filters.sports_court ? 1 : 0,
-        security_24h: filters.security_24h ? 1 : 0,
-        reception: filters.reception ? 1 : 0,
-        elevator: filters.elevator ? 1 : 0,
-        parking: filters.parking ? 1 : 0,
-        near_metro: filters.near_metro ? 1 : 0,
-        near_bus: filters.near_bus ? 1 : 0,
-        near_highway: filters.near_highway ? 1 : 0,
-        near_school: filters.near_school ? 1 : 0,
-        near_hospital: filters.near_hospital ? 1 : 0,
-        near_mall: filters.near_mall ? 1 : 0,
-        near_market: filters.near_market ? 1 : 0,
-        near_park: filters.near_park ? 1 : 0,
-        river_view: filters.river_view ? 1 : 0,
-        park_view: filters.park_view ? 1 : 0,
-        city_view: filters.city_view ? 1 : 0,
-        balcony: filters.balcony ? 1 : 0,
-        garden: filters.garden ? 1 : 0,
-        garage: filters.garage ? 1 : 0,
-        terrace: filters.terrace ? 1 : 0,
+        // Amenities: strict boolean conversion
+        pool: !!filters.pool,
+        gym: !!filters.gym,
+        park: !!filters.park,
+        bbq: !!filters.bbq,
+        kids_playground: !!filters.kids_playground,
+        sports_court: !!filters.sports_court,
+        security_24h: !!filters.security_24h,
+        reception: !!filters.reception,
+        elevator: !!filters.elevator,
+        parking: !!filters.parking,
+        near_metro: !!filters.near_metro,
+        near_bus: !!filters.near_bus,
+        near_highway: !!filters.near_highway,
+        near_school: !!filters.near_school,
+        near_hospital: !!filters.near_hospital,
+        near_mall: !!filters.near_mall,
+        near_market: !!filters.near_market,
+        near_park: !!filters.near_park,
+        river_view: !!filters.river_view,
+        park_view: !!filters.park_view,
+        city_view: !!filters.city_view,
+        balcony: !!filters.balcony,
+        garden: !!filters.garden,
+        garage: !!filters.garage,
+        terrace: !!filters.terrace,
+        // Missing fields
+        length_road_entrance: 0,
+        // District: derive from array if needed, exclude 'Tất cả'
+        district: filters.district && typeof filters.district === 'string' 
+          ? filters.district.split(',').filter((d: string) => d.trim() !== 'Tất cả').join(',')
+          : (filters.district || ""),
+        // Property type: send correct string format
+        property_type: filters.property_type || "Căn hộ,Nhà đất",
       }
 
       console.log("[v0] AI Search payload:", payload)
