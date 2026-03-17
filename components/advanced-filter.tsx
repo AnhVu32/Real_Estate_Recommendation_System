@@ -91,6 +91,72 @@ export function AdvancedFilter({ onApplyFilters, onFilterChange }: AdvancedFilte
   
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
 
+  // Push live/draft filter state whenever any filter changes
+  useEffect(() => {
+    if (!onFilterChange) return
+
+    const draftFilters: any = {}
+
+    // Districts/Wards
+    const selectedWardsWithoutAll = selectedWards.filter(w => w !== "Tất cả")
+    const totalWardsWithoutAll = WARDS.filter(w => w !== "Tất cả").length
+    if (selectedWardsWithoutAll.length > 0 && selectedWardsWithoutAll.length < totalWardsWithoutAll) {
+      draftFilters.district = selectedWardsWithoutAll.join(",")
+    }
+
+    if (minPrice) draftFilters.min_price = parseFloat(minPrice)
+    if (maxPrice) draftFilters.max_price = parseFloat(maxPrice)
+    if (minArea) draftFilters.min_area = parseFloat(minArea)
+    if (maxArea) draftFilters.max_area = parseFloat(maxArea)
+    if (selectedBedrooms) draftFilters.bedrooms = parseInt(selectedBedrooms)
+    if (selectedBathrooms) draftFilters.bathrooms = parseInt(selectedBathrooms)
+
+    // Property type mapping
+    if (propertyType === "Tất cả") {
+      draftFilters.property_type = "Căn hộ,Nhà đất"
+    } else if (propertyType === "Căn hộ") {
+      draftFilters.property_type = "Căn hộ"
+    } else if (propertyType === "Nhà đất") {
+      draftFilters.property_type = "Nhà đất"
+    }
+
+    if (selectedLegalStatus.length > 0) {
+      draftFilters.legal_status = selectedLegalStatus.join(",")
+    }
+
+    if (selectedFurniture.length > 0) {
+      draftFilters.furniture = selectedFurniture.join(",")
+    }
+
+    if (selectedHouseDirection.length > 0) {
+      draftFilters.house_direction = selectedHouseDirection.join(",")
+    }
+
+    if (selectedBalconyDirection.length > 0) {
+      draftFilters.balcony_direction = selectedBalconyDirection.join(",")
+    }
+
+    // Amenities
+    const otherAmenities = AMENITIES.filter(a => a !== "Tất cả")
+    const hasAllAmenities = selectedAmenities.length === otherAmenities.length
+    if (selectedAmenities.length > 0 && !hasAllAmenities) {
+      selectedAmenities.forEach(amenity => {
+        const apiParam = AMENITY_MAPPING[amenity]
+        if (apiParam) {
+          draftFilters[apiParam] = true
+        }
+      })
+    }
+
+    console.log("[v0] Live filters (draft):", draftFilters)
+    onFilterChange(draftFilters)
+  }, [
+    selectedWards, minPrice, maxPrice, minArea, maxArea, selectedBedrooms,
+    selectedBathrooms, propertyType, selectedLegalStatus, selectedFurniture,
+    selectedHouseDirection, selectedBalconyDirection, selectedAmenities,
+    onFilterChange
+  ])
+
   const filteredWards = useMemo(() => {
     if (!wardSearch) return WARDS
     return WARDS.filter(ward => 
