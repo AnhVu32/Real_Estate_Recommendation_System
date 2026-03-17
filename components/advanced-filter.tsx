@@ -80,7 +80,7 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
   const [maxArea, setMaxArea] = useState("")
   const [selectedBedrooms, setSelectedBedrooms] = useState("")
   const [selectedBathrooms, setSelectedBathrooms] = useState("")
-  const [propertyType, setPropertyType] = useState("all")
+  const [propertyType, setPropertyType] = useState("Tất cả")
   
   // Array states for 4 checkbox groups with exact Vietnamese strings
   const [selectedLegalStatus, setSelectedLegalStatus] = useState<string[]>([])
@@ -189,6 +189,15 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
     if (selectedBedrooms) filters.bedrooms = parseInt(selectedBedrooms)
     if (selectedBathrooms) filters.bathrooms = parseInt(selectedBathrooms)
 
+    // Property type mapping
+    if (propertyType === "Tất cả") {
+      filters.property_type = "Căn hộ,Nhà đất"
+    } else if (propertyType === "Căn hộ") {
+      filters.property_type = "Căn hộ"
+    } else if (propertyType === "Nhà đất") {
+      filters.property_type = "Nhà đất"
+    }
+
     // Legal status - send exact Vietnamese strings joined by comma
     if (selectedLegalStatus.length > 0) {
       filters.legal_status = selectedLegalStatus.join(",")
@@ -275,9 +284,9 @@ export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
               <SelectValue placeholder="Tất cả" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="can-ho">Căn hộ</SelectItem>
-              <SelectItem value="nha-dat">Nhà đất</SelectItem>
+              <SelectItem value="Tất cả">Tất cả</SelectItem>
+              <SelectItem value="Căn hộ">Căn hộ</SelectItem>
+              <SelectItem value="Nhà đất">Nhà đất</SelectItem>
             </SelectContent>
           </Select>
         </div>
