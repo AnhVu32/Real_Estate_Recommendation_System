@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -69,9 +69,10 @@ const AMENITY_MAPPING: { [key: string]: string } = {
 
 interface AdvancedFilterProps {
   onApplyFilters: (filters: any) => void
+  onFilterChange?: (draftFilters: any) => void
 }
 
-export function AdvancedFilter({ onApplyFilters }: AdvancedFilterProps) {
+export function AdvancedFilter({ onApplyFilters, onFilterChange }: AdvancedFilterProps) {
   const [wardSearch, setWardSearch] = useState("")
   const [selectedWards, setSelectedWards] = useState<string[]>([])
   const [minPrice, setMinPrice] = useState("")

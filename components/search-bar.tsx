@@ -26,11 +26,11 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   }
 
   return (
-    <div className="border-b border-border bg-background py-4">
+    <div className="border-b border-border bg-background py-4" suppressHydrationWarning>
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-3">
           {/* Main Search Input with integrated button */}
-          <div className="relative flex-1 flex items-center bg-muted/50 border border-border rounded-lg overflow-hidden">
+          <div className="relative flex-1 flex items-center bg-muted/50 border border-border rounded-lg overflow-hidden" suppressHydrationWarning>
             <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
