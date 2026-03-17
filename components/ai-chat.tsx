@@ -45,10 +45,13 @@ export function AIChat() {
     
     if (!inputValue.trim()) return
 
+    // Capture the input before clearing
+    const userQuestion = inputValue
+
     // Add user message
     const userMessage: ChatMessage = {
       role: "user",
-      content: inputValue,
+      content: userQuestion,
       timestamp: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
     }
     setMessages(prev => [...prev, userMessage])
@@ -64,22 +67,23 @@ export function AIChat() {
     setIsLoading(true)
 
     try {
-      // Build payload with question and filters
-      // Apply transformations and format strictly for the AI Search API
-      const payload: AISearchPayload = {
-        question: inputValue,
-        // Max values: use 999999 if 0
+      // Create a formatted payload specifically for the AI backend
+      const apiPayload = {
+        question: userQuestion,
         min_price: filters.min_price || 0,
-        max_price: filters.max_price === 0 ? 999999 : (filters.max_price || 0),
+        max_price: filters.max_price === 0 ? 999999 : filters.max_price,
         min_area: filters.min_area || 0,
-        max_area: filters.max_area === 0 ? 999999 : (filters.max_area || 0),
+        max_area: filters.max_area === 0 ? 999999 : filters.max_area,
         bedrooms: filters.bedrooms || 0,
         bathrooms: filters.bathrooms || 0,
         legal_status: filters.legal_status || "",
         furniture: filters.furniture || "",
         house_direction: filters.house_direction || "",
         balcony_direction: filters.balcony_direction || "",
-        // Amenities: strict boolean conversion
+        district: filters.district || "",
+        property_type: filters.property_type || "",
+        length_road_entrance: 0,
+        // Force all boolean fields to be true/false, NOT 1/0
         pool: !!filters.pool,
         gym: !!filters.gym,
         park: !!filters.park,
@@ -105,17 +109,9 @@ export function AIChat() {
         garden: !!filters.garden,
         garage: !!filters.garage,
         terrace: !!filters.terrace,
-        // Missing fields
-        length_road_entrance: 0,
-        // District: derive from array if needed, exclude 'Tất cả'
-        district: filters.district && typeof filters.district === 'string' 
-          ? filters.district.split(',').filter((d: string) => d.trim() !== 'Tất cả').join(',')
-          : (filters.district || ""),
-        // Property type: send correct string format
-        property_type: filters.property_type || "Căn hộ,Nhà đất",
       }
 
-      console.log("[v0] AI Search payload:", payload)
+      console.log("[v0] AI Search payload:", apiPayload)
 
       // Use the API proxy route
       const response = await fetch("/api/properties/ai-search", {
@@ -123,7 +119,7 @@ export function AIChat() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(apiPayload),
       })
 
       if (!response.ok) {
